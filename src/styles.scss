@@ -1,1 +1,15 @@
-/* You can add global styles to this file, and also import other style files */
+/* Global look & feel */
+body {
+  background: #f8f9fa; // bootstrap-like gray
+}
+
+/* Better defaults */
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Links inside cards */
+a {
+  color: inherit;
+}

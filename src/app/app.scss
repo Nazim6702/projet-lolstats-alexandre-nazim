@@ -1,0 +1,14 @@
+/* Keep content readable under navbar */
+main.container {
+  min-height: calc(100vh - 56px); // approx navbar height
+}
+
+/* Navbar brand */
+.navbar-brand {
+  letter-spacing: 0.2px;
+}
+
+/* Active link more visible */
+.nav-link.active {
+  font-weight: 600;
+}

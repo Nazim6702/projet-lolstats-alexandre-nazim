@@ -1,0 +1,22 @@
+:host {
+  display: block;
+}
+
+.btn-group .btn {
+  border-radius: 0.6rem;
+}
+
+/* Table polish */
+.table {
+  border-radius: 0.8rem;
+  overflow: hidden;
+}
+
+.table thead th {
+  font-weight: 700;
+}
+
+/* Emphasize LP column */
+td.fw-bold {
+  letter-spacing: 0.2px;
+}

@@ -1,0 +1,28 @@
+:host {
+  display: block;
+}
+
+/* Big splash image */
+img.img-fluid {
+  border-radius: 1rem;
+}
+
+/* Cards */
+.card {
+  border-radius: 0.9rem;
+}
+
+/* Spell/passive icons */
+img.rounded.border {
+  border-radius: 0.9rem !important;
+  background: #fff;
+}
+
+/* Description HTML from DDragon */
+:host ::ng-deep p {
+  margin-bottom: 0.5rem;
+}
+
+:host ::ng-deep ul {
+  margin-bottom: 0.5rem;
+}
