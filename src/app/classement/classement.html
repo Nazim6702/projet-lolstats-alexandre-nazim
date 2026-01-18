@@ -1,0 +1,69 @@
+<div class="d-flex align-items-center justify-content-between mb-3">
+  <div>
+    <h1 class="mb-1">Classement global</h1>
+    <p class="text-muted mb-0">Top joueurs ({{ queue }})</p>
+  </div>
+
+  <div class="btn-group" role="group">
+    @for (t of tiers; track t.key) {
+      <button
+        type="button"
+        class="btn"
+        [class.btn-primary]="tier === t.key"
+        [class.btn-outline-primary]="tier !== t.key"
+        (click)="setTier(t.key)"
+      >
+        {{ t.label }}
+      </button>
+    }
+  </div>
+</div>
+
+@if (loading) {
+  <div class="alert alert-info">Chargement du classement...</div>
+}
+
+@if (error) {
+  <div class="alert alert-danger">
+    {{ error }}
+    <button class="btn btn-sm btn-outline-light ms-2" (click)="fetch()">Réessayer</button>
+  </div>
+}
+
+@if (!loading && !error && data) {
+  <div class="mb-3">
+    <span class="badge text-bg-secondary me-2">{{ data.tier }}</span>
+    <span class="badge text-bg-secondary">{{ data.queue }}</span>
+  </div>
+
+  @if (entries.length === 0) {
+    <div class="alert alert-warning">Aucune entrée à afficher.</div>
+  } @else {
+    <div class="table-responsive">
+      <table class="table table-striped align-middle">
+        <thead>
+        <tr>
+          <th>#</th>
+          <th>Joueur</th>
+          <th class="text-end">LP</th>
+          <th class="text-end">Wins</th>
+          <th class="text-end">Losses</th>
+          <th class="text-end">Winrate</th>
+        </tr>
+        </thead>
+        <tbody>
+          @for (e of entries; track e.summonerName; let i = $index) {
+            <tr>
+              <td>{{ i + 1 }}</td>
+              <td>{{ e.summonerName }}</td>
+              <td class="text-end fw-bold">{{ e.leaguePoints }}</td>
+              <td class="text-end">{{ e.wins }}</td>
+              <td class="text-end">{{ e.losses }}</td>
+              <td class="text-end">{{ winratePercent(e) }}%</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+}

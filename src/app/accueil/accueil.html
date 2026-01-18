@@ -1,0 +1,36 @@
+<h1 class="mb-3">LoL Stats</h1>
+<p class="text-muted">Recherche un joueur avec son Riot ID (pseudo + tag).</p>
+
+<form class="row g-3" (ngSubmit)="search()" #f="ngForm">
+  <div class="col-md-6">
+    <label class="form-label">Pseudo</label>
+    <input
+      class="form-control"
+      name="gameName"
+      [(ngModel)]="gameName"
+      required
+      placeholder="ex: Sumish"
+    />
+  </div>
+
+  <div class="col-md-6">
+    <label class="form-label">Tag</label>
+    <input
+      class="form-control"
+      name="tagLine"
+      [(ngModel)]="tagLine"
+      required
+      placeholder="ex: QLF"
+    />
+  </div>
+
+  <div class="col-12">
+    <button class="btn btn-primary" type="submit" [disabled]="f.invalid || loading">
+      @if (loading) { Recherche... } @else { Rechercher }
+    </button>
+  </div>
+</form>
+
+@if (error) {
+  <div class="alert alert-danger mt-3 mb-0">{{ error }}</div>
+}

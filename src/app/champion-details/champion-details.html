@@ -1,0 +1,69 @@
+@if (loading) {
+  <div class="alert alert-info">Chargement du champion...</div>
+}
+
+@if (error) {
+  <div class="alert alert-danger">
+    {{ error }}
+    <button class="btn btn-sm btn-outline-light ms-2" (click)="fetch()">Réessayer</button>
+  </div>
+}
+
+@if (!loading && !error && champion) {
+  <div class="mb-3">
+    <h1 class="mb-1">{{ champion.name }}</h1>
+    <p class="text-muted mb-0">{{ champion.title }}</p>
+  </div>
+
+  <img class="img-fluid rounded mb-3" [src]="splashUrl()" [alt]="champion.name" />
+
+  <div class="card mb-3">
+    <div class="card-body">
+      <h5 class="card-title">Lore</h5>
+      <p class="mb-0">{{ champion.lore }}</p>
+    </div>
+  </div>
+
+  <div class="card mb-3">
+    <div class="card-body">
+      <h5 class="card-title">Passif</h5>
+      <div class="d-flex gap-3 align-items-start">
+        <img
+          width="64"
+          height="64"
+          class="rounded border"
+          [src]="passiveImg(champion.passive.image.full)"
+          [alt]="champion.passive.name"
+        />
+        <div>
+          <h6 class="mb-1">{{ champion.passive.name }}</h6>
+          <div [innerHTML]="champion.passive.description"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-body">
+      <h5 class="card-title">Compétences</h5>
+
+      <div class="d-flex flex-column gap-3">
+        @for (s of champion.spells; track s.id) {
+          <div class="d-flex gap-3 align-items-start">
+            <img
+              width="64"
+              height="64"
+              class="rounded border"
+              [src]="spellImg(s.image.full)"
+              [alt]="s.name"
+            />
+            <div>
+              <h6 class="mb-1">{{ s.name }}</h6>
+              <div [innerHTML]="s.description"></div>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+}

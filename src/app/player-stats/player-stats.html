@@ -1,0 +1,56 @@
+<h1 class="mb-3">Stats du joueur</h1>
+
+<p class="text-muted mb-2">Puuid (depuis l’URL) :</p>
+<div class="alert alert-secondary">{{ puuid }}</div>
+
+@if (loading) {
+  <div class="alert alert-info">Chargement des stats...</div>
+}
+
+@if (error) {
+  <div class="alert alert-danger">
+    {{ error }}
+    <button class="btn btn-sm btn-outline-light ms-2" (click)="fetchStats()">Réessayer</button>
+  </div>
+}
+
+@if (!loading && !error && stats) {
+  @if (stats.count === 0) {
+    <div class="alert alert-warning">Aucun match récent trouvé pour ce joueur.</div>
+  } @else {
+    <div class="card mb-3">
+      <div class="card-body">
+        <h5 class="card-title">Résumé ({{ stats.count }} derniers matchs)</h5>
+
+        <p class="mb-1">
+          <strong>Winrate :</strong> {{ winratePercent }}% ({{ stats.wins }}W / {{ stats.losses }}L)
+        </p>
+
+        @if (stats.avgKda) {
+          <p class="mb-0">
+            <strong>KDA moyen :</strong>
+            {{ stats.avgKda.kills | number:'1.1-1' }} /
+            {{ stats.avgKda.deaths | number:'1.1-1' }} /
+            {{ stats.avgKda.assists | number:'1.1-1' }}
+          </p>
+        }
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">Champions favoris</h5>
+
+        @if (stats.topChampions.length === 0) {
+          <p class="text-muted mb-0">Pas de données champion.</p>
+        } @else {
+          <ul class="mb-0">
+            @for (c of stats.topChampions; track c.championName) {
+              <li>{{ c.championName }} — {{ c.games }} game(s)</li>
+            }
+          </ul>
+        }
+      </div>
+    </div>
+  }
+}

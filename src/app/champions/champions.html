@@ -1,0 +1,61 @@
+<div class="d-flex align-items-center justify-content-between mb-3">
+  <div>
+    <h1 class="mb-1">Champions</h1>
+    <p class="text-muted mb-0">Filtre par rôle (heuristique via tags Data Dragon).</p>
+  </div>
+  @if (version) {
+    <span class="badge text-bg-secondary">v{{ version }}</span>
+  }
+</div>
+
+@if (loading) {
+  <div class="alert alert-info">Chargement des champions...</div>
+}
+
+@if (error) {
+  <div class="alert alert-danger">{{ error }}</div>
+}
+
+@if (!loading && !error) {
+  <!-- Filtres -->
+  <div class="btn-group mb-3 flex-wrap" role="group">
+    @for (r of roles; track r) {
+      <button
+        type="button"
+        class="btn"
+        [class.btn-primary]="role === r"
+        [class.btn-outline-primary]="role !== r"
+        (click)="setRole(r)"
+      >
+        {{ r }}
+      </button>
+    }
+  </div>
+
+  <p class="text-muted">
+    {{ filtered.length }} champion(s) affiché(s)
+  </p>
+
+  <!-- Grille -->
+  <div class="row g-3">
+    @for (c of filtered; track c.id) {
+      <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+        <a class="text-decoration-none" [routerLink]="['/champions', c.id]">
+          <div class="card h-100">
+            <img [src]="imgUrl(c)" class="card-img-top" [alt]="c.name" />
+            <div class="card-body">
+              <h5 class="card-title mb-1">{{ c.name }}</h5>
+              <p class="card-text text-muted mb-2">{{ c.title }}</p>
+
+              <div class="d-flex gap-1 flex-wrap">
+                @for (t of c.tags; track t) {
+                  <span class="badge text-bg-light border">{{ t }}</span>
+                }
+              </div>
+            </div>
+          </div>
+        </a>
+      </div>
+    }
+  </div>
+}
