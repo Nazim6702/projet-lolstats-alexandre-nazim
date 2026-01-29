@@ -42,7 +42,7 @@
       <div class="col-12 col-sm-6 col-md-4 col-lg-3">
         <a class="text-decoration-none" [routerLink]="['/champions', c.id]">
           <div class="card h-100">
-            <img [src]="imgUrl(c)" class="card-img-top" [alt]="c.name" />
+            <img [src]="c.imageUrl" class="card-img-top" [alt]="c.name" />
             <div class="card-body">
               <h5 class="card-title mb-1">{{ c.name }}</h5>
               <p class="card-text text-muted mb-2">{{ c.title }}</p>

@@ -4,7 +4,7 @@
     <p class="text-muted mb-0">Top joueurs ({{ queue }})</p>
   </div>
 
-  <div class="btn-group" role="group">
+  <div class="btn-group" role="group" aria-label="Filtrer par tier">
     @for (t of tiers; track t.key) {
       <button
         type="button"
@@ -20,46 +20,56 @@
 </div>
 
 @if (loading) {
-  <div class="alert alert-info">Chargement du classement...</div>
-}
-
-@if (error) {
-  <div class="alert alert-danger">
+  <div class="alert alert-info mb-0">Chargement du classement...</div>
+} @else if (error) {
+  <div class="alert alert-danger mb-0">
     {{ error }}
-    <button class="btn btn-sm btn-outline-light ms-2" (click)="fetch()">Réessayer</button>
+    <button class="btn btn-sm btn-outline-light ms-2" type="button" (click)="fetch()">
+      Réessayer
+    </button>
   </div>
-}
-
-@if (!loading && !error && data) {
+} @else if (data) {
   <div class="mb-3">
     <span class="badge text-bg-secondary me-2">{{ data.tier }}</span>
     <span class="badge text-bg-secondary">{{ data.queue }}</span>
   </div>
 
   @if (entries.length === 0) {
-    <div class="alert alert-warning">Aucune entrée à afficher.</div>
+    <div class="alert alert-warning mb-0">Aucune entrée à afficher.</div>
   } @else {
     <div class="table-responsive">
-      <table class="table table-striped align-middle">
+      <table class="table table-striped align-middle mb-0">
         <thead>
         <tr>
-          <th>#</th>
-          <th>Joueur</th>
-          <th class="text-end">LP</th>
-          <th class="text-end">Wins</th>
-          <th class="text-end">Losses</th>
-          <th class="text-end">Winrate</th>
+          <th scope="col">#</th>
+          <th scope="col">Joueur</th>
+          <th scope="col" class="text-end">LP</th>
+          <th scope="col" class="text-end">Wins</th>
+          <th scope="col" class="text-end">Losses</th>
+          <th scope="col" class="text-end">Winrate</th>
         </tr>
         </thead>
+
         <tbody>
-          @for (e of entries; track e.summonerName; let i = $index) {
+          @for (e of entries; track e.puuid; let i = $index) {
             <tr>
-              <td>{{ i + 1 }}</td>
-              <td>{{ e.summonerName }}</td>
+              <th scope="row">{{ i + 1 }}</th>
+
+              <td class="d-flex align-items-center justify-content-between gap-2">
+                <span class="text-muted small">
+                  {{ e.puuid | slice:0:10 }}…
+                  @if (e.rank) { <span class="ms-1">({{ e.rank }})</span> }
+                </span>
+
+                <a class="btn btn-sm btn-outline-primary" [routerLink]="['/joueur', e.puuid]">
+                  Stats
+                </a>
+              </td>
+
               <td class="text-end fw-bold">{{ e.leaguePoints }}</td>
               <td class="text-end">{{ e.wins }}</td>
               <td class="text-end">{{ e.losses }}</td>
-              <td class="text-end">{{ winratePercent(e) }}%</td>
+              <td class="text-end">{{ e.winrate }}%</td>
             </tr>
           }
         </tbody>

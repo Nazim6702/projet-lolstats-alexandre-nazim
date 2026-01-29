@@ -1,67 +1,79 @@
-import { Component, OnInit } from '@angular/core';
-import { RiotApiService, RankingDTO, RankingEntryDTO, RankingTier } from '../services/riot-api';
+import { Component, DestroyRef, inject } from '@angular/core';
+import { finalize } from 'rxjs/operators';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { RouterLink } from '@angular/router';
+
+
+import { RiotApiService, RankingEntryDTO, RankingTier } from '../services/riot-api';
+import {SlicePipe} from '@angular/common';
+
+type RankingEntryVm = RankingEntryDTO & { winrate: number };
 
 @Component({
   selector: 'app-classement',
   standalone: true,
-  imports: [],
   templateUrl: './classement.html',
   styleUrl: './classement.scss',
+  imports: [
+    SlicePipe,RouterLink
+  ]
 })
-export class Classement implements OnInit {
-  loading = false;
-  error = '';
+export class ClassementComponent {
+  protected loading = false;
+  protected error = '';
 
-  tier: RankingTier = 'challenger';
-  queue = 'RANKED_SOLO_5x5';
+  protected readonly queue = 'RANKED_SOLO_5x5';
 
-  data: RankingDTO | null = null;
-  entries: RankingEntryDTO[] = [];
-
-  tiers: { key: RankingTier; label: string }[] = [
+  protected readonly tiers: readonly { key: RankingTier; label: string }[] = [
     { key: 'challenger', label: 'Challenger' },
     { key: 'grandmaster', label: 'Grandmaster' },
     { key: 'master', label: 'Master' },
-  ];
+  ] as const;
 
-  constructor(private api: RiotApiService) {}
+  protected tier: RankingTier = 'challenger';
 
-  ngOnInit(): void {
+  protected data: { tier: string; queue: string } | null = null;
+  protected entries: RankingEntryVm[] = [];
+
+  private readonly api = inject(RiotApiService);
+  private readonly destroyRef = inject(DestroyRef);
+
+  constructor() {
     this.fetch();
   }
 
-  setTier(t: RankingTier): void {
-    this.tier = t;
+  protected setTier(tier: RankingTier): void {
+    if (tier === this.tier) return;
+    this.tier = tier;
     this.fetch();
   }
 
-  fetch(): void {
+  protected fetch(): void {
     this.loading = true;
     this.error = '';
-    this.data = null;
     this.entries = [];
+    this.data = null;
 
-    this.api.getRanking(this.tier, this.queue).subscribe({
-      next: (r: RankingDTO) => {
-        this.loading = false;
-        this.data = r;
+    this.api
+      .getRanking(this.tier, this.queue)
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        finalize(() => {
+          this.loading = false;
+        }),
+      )
+      .subscribe({
+        next: (res) => {
+          this.data = { tier: res.tier, queue: res.queue };
 
-        // Tri par LP décroissant
-        this.entries = (r.entries ?? []).slice().sort((a, b) => b.leaguePoints - a.leaguePoints);
-      },
-      error: (err) => {
-        this.loading = false;
-        const status = err?.status;
-
-        if (status === 429) this.error = 'Rate limit Riot. Réessaie dans quelques secondes.';
-        else this.error = 'Erreur serveur. Vérifie que le backend est lancé.';
-      },
-    });
-  }
-
-  winratePercent(e: RankingEntryDTO): number {
-    const total = (e.wins ?? 0) + (e.losses ?? 0);
-    if (total === 0) return 0;
-    return Math.round(((e.wins ?? 0) / total) * 100);
+          this.entries = res.entries.map((e) => ({
+            ...e,
+            winrate: Math.round((e.wins / (e.wins + e.losses)) * 100),
+          }));
+        },
+        error: () => {
+          this.error = 'Impossible de charger le classement.';
+        },
+      });
   }
 }

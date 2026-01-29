@@ -1,16 +1,26 @@
 <h1 class="mb-3">Stats du joueur</h1>
 
-<p class="text-muted mb-2">Puuid (depuis l’URL) :</p>
-<div class="alert alert-secondary">{{ puuid }}</div>
+<p class="text-muted mb-2">Identifiant joueur (Puuid) :</p>
+<div class="alert alert-secondary py-2">
+  <code class="small">{{ puuid }}</code>
+</div>
 
 @if (loading) {
-  <div class="alert alert-info">Chargement des stats...</div>
+  <div class="alert alert-info" role="status" aria-live="polite">
+    Chargement des stats...
+  </div>
 }
 
 @if (error) {
-  <div class="alert alert-danger">
+  <div class="alert alert-danger" aria-live="polite">
     {{ error }}
-    <button class="btn btn-sm btn-outline-light ms-2" (click)="fetchStats()">Réessayer</button>
+    <button
+      class="btn btn-sm btn-outline-light ms-2"
+      type="button"
+      (click)="fetchStats()"
+    >
+      Réessayer
+    </button>
   </div>
 }
 
@@ -23,7 +33,8 @@
         <h5 class="card-title">Résumé ({{ stats.count }} derniers matchs)</h5>
 
         <p class="mb-1">
-          <strong>Winrate :</strong> {{ winratePercent }}% ({{ stats.wins }}W / {{ stats.losses }}L)
+          <strong>Winrate :</strong> {{ winratePercent }}%
+          ({{ stats.wins }}W / {{ stats.losses }}L)
         </p>
 
         @if (stats.avgKda) {

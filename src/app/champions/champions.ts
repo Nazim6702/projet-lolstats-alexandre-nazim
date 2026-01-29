@@ -1,7 +1,13 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, DestroyRef, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { finalize, switchMap } from 'rxjs/operators';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import { ChampionsService, DDragonChampionSummary, RoleFilter } from '../services/champions';
+
+type ChampionCardVm = DDragonChampionSummary & {
+  imageUrl: string;
+};
 
 @Component({
   selector: 'app-champions',
@@ -10,55 +16,69 @@ import { ChampionsService, DDragonChampionSummary, RoleFilter } from '../service
   templateUrl: './champions.html',
   styleUrl: './champions.scss',
 })
-export class Champions implements OnInit {
-  role: RoleFilter = 'ALL';
+export class ChampionsComponent {
+  protected role: RoleFilter = 'ALL';
 
-  loading = false;
-  error = '';
+  protected loading = false;
+  protected error = '';
 
-  version: string = '';
-  champions: DDragonChampionSummary[] = [];
-  filtered: DDragonChampionSummary[] = [];
+  protected version = '';
+  protected champions: ChampionCardVm[] = [];
+  protected filtered: ChampionCardVm[] = [];
 
-  roles: RoleFilter[] = ['ALL', 'TOP', 'JUNGLE', 'MID', 'ADC', 'SUPPORT'];
+  protected readonly roles: readonly RoleFilter[] = ['ALL', 'TOP', 'JUNGLE', 'MID', 'ADC', 'SUPPORT'];
 
-  constructor(private championsService: ChampionsService) {}
+  private readonly championsService = inject(ChampionsService);
+  private readonly destroyRef = inject(DestroyRef);
 
-  ngOnInit(): void {
-    this.loading = true;
-
-    // On récupère version + champions
-    this.championsService.getVersion().subscribe({
-      next: (v) => (this.version = v),
-      error: () => {},
-    });
-
-    this.championsService.getChampions().subscribe({
-      next: (list) => {
-        this.loading = false;
-        this.champions = list;
-        this.applyFilter();
-      },
-      error: () => {
-        this.loading = false;
-        this.error = 'Impossible de charger les champions (Data Dragon).';
-      },
-    });
+  constructor() {
+    this.fetch();
   }
 
-  setRole(role: RoleFilter): void {
+  protected fetch(): void {
+    this.loading = true;
+    this.error = '';
+    this.champions = [];
+    this.filtered = [];
+
+    this.championsService
+      .getVersion()
+      .pipe(
+        switchMap((v) => {
+          this.version = v;
+
+          return this.championsService.getChampions();
+        }),
+        finalize(() => {
+          this.loading = false;
+        }),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe({
+        next: (list) => {
+          // On enrichit la donnée dès le chargement
+          const vm = list.map((c) => ({
+            ...c,
+            imageUrl: this.championsService.getChampionImageUrl(this.version, c.id),
+          }));
+
+          this.champions = vm;
+          this.applyFilter();
+        },
+        error: () => {
+          this.error = 'Impossible de charger les champions (Data Dragon).';
+        },
+      });
+  }
+
+  protected setRole(role: RoleFilter): void {
     this.role = role;
     this.applyFilter();
   }
 
-  applyFilter(): void {
+  private applyFilter(): void {
     this.filtered = this.champions.filter((c) =>
-      this.championsService.championMatchesRole(c, this.role)
+      this.championsService.championMatchesRole(c, this.role),
     );
-  }
-
-  imgUrl(champ: DDragonChampionSummary): string {
-    // champ.id = "Ahri"
-    return this.championsService.getChampionImageUrl(this.version, champ.id)
   }
 }

@@ -1,62 +1,97 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, DestroyRef, inject } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { finalize, map, switchMap } from 'rxjs/operators';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { forkJoin, of } from 'rxjs';
 
 import { ChampionsService, DDragonChampionDetails } from '../services/champions';
+
+type ChampionDetailsVm = DDragonChampionDetails & {
+  splashUrl: string;
+  passiveImgUrl: string;
+  spellsVm: Array<
+    DDragonChampionDetails['spells'][number] & { imgUrl: string }
+  >;
+};
 
 @Component({
   selector: 'app-champion-details',
   standalone: true,
-  imports: [],
   templateUrl: './champion-details.html',
   styleUrl: './champion-details.scss',
 })
-export class ChampionDetails implements OnInit {
-  id = '';
+export class ChampionDetailsComponent {
+  protected loading = false;
+  protected error = '';
 
-  loading = false;
-  error = '';
+  protected id = '';
+  protected champion: ChampionDetailsVm | null = null;
 
-  version = '';
-  champion: DDragonChampionDetails | null = null;
+  private readonly route = inject(ActivatedRoute);
+  private readonly championsService = inject(ChampionsService);
+  private readonly destroyRef = inject(DestroyRef);
 
-  constructor(private route: ActivatedRoute, private championsService: ChampionsService) {}
-
-  ngOnInit(): void {
-    this.id = this.route.snapshot.paramMap.get('id') ?? '';
-    this.fetch();
+  constructor() {
+    // On réagit aux changements d'URL (si tu navigues d'un champion à un autre sans détruire le composant)
+    this.route.paramMap
+      .pipe(
+        map((p) => p.get('id') ?? ''),
+        switchMap((id) => {
+          this.id = id;
+          if (!id) {
+            this.error = 'Champion introuvable (id manquant).';
+            return of(null);
+          }
+          return this.fetchChampionVm(id);
+        }),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe();
   }
 
-  fetch(): void {
+  protected fetch(): void {
+    if (!this.id) return;
+    this.fetchChampionVm(this.id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
+  }
+
+  private fetchChampionVm(id: string) {
     this.loading = true;
     this.error = '';
     this.champion = null;
 
-    this.championsService.getVersion().subscribe({
-      next: (v) => (this.version = v),
-      error: () => {},
-    });
+    return forkJoin({
+      version: this.championsService.getVersion(),
+      details: this.championsService.getChampionDetails(id),
+    }).pipe(
+      map(({ version, details }) => {
+        const splashUrl = this.championsService.getSplashArtUrl(id);
+        const passiveImgUrl = this.championsService.getPassiveImageUrl(
+          version,
+          details.passive.image.full,
+        );
 
-    this.championsService.getChampionDetails(this.id).subscribe({
-      next: (c) => {
+        const spellsVm = details.spells.map((s) => ({
+          ...s,
+          imgUrl: this.championsService.getSpellImageUrl(version, s.image.full),
+        }));
+
+        const vm: ChampionDetailsVm = {
+          ...details,
+          splashUrl,
+          passiveImgUrl,
+          spellsVm,
+        };
+
+        this.champion = vm;
+        return vm;
+      }),
+      finalize(() => {
         this.loading = false;
-        this.champion = c;
-      },
-      error: () => {
-        this.loading = false;
-        this.error = "Impossible de charger les détails du champion.";
-      },
-    });
-  }
-
-  splashUrl(): string {
-    return this.championsService.getSplashArtUrl(this.id);
-  }
-
-  spellImg(full: string): string {
-    return this.championsService.getSpellImageUrl(this.version, full);
-  }
-
-  passiveImg(full: string): string {
-    return this.championsService.getPassiveImageUrl(this.version, full);
+      }),
+      // gestion d'erreur simple (tu peux raffiner selon status)
+      // eslint-disable-next-line rxjs/no-ignored-error
+      // (pas nécessaire si tu n'as pas eslint rxjs)
+      // catchError(() => { ... })
+    );
   }
 }

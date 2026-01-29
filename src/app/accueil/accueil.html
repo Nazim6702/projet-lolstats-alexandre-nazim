@@ -1,25 +1,31 @@
 <h1 class="mb-3">LoL Stats</h1>
 <p class="text-muted">Recherche un joueur avec son Riot ID (pseudo + tag).</p>
 
-<form class="row g-3" (ngSubmit)="search()" #f="ngForm">
+<form class="row g-3" (ngSubmit)="search()" #f="ngForm" novalidate>
   <div class="col-md-6">
-    <label class="form-label">Pseudo</label>
+    <label class="form-label" for="gameName">Pseudo</label>
     <input
+      id="gameName"
+      type="text"
       class="form-control"
       name="gameName"
       [(ngModel)]="gameName"
       required
+      autocomplete="off"
       placeholder="ex: Sumish"
     />
   </div>
 
   <div class="col-md-6">
-    <label class="form-label">Tag</label>
+    <label class="form-label" for="tagLine">Tag</label>
     <input
+      id="tagLine"
+      type="text"
       class="form-control"
       name="tagLine"
       [(ngModel)]="tagLine"
       required
+      autocomplete="off"
       placeholder="ex: QLF"
     />
   </div>

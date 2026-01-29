@@ -1,6 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, DestroyRef, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { finalize } from 'rxjs/operators';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+
 import { RiotApiService } from '../services/riot-api';
 
 @Component({
@@ -10,16 +13,20 @@ import { RiotApiService } from '../services/riot-api';
   templateUrl: './accueil.html',
   styleUrl: './accueil.scss',
 })
-export class Accueil {
-  gameName = '';
-  tagLine = '';
-  loading = false;
-  error = '';
+export class AccueilComponent {
+  // utilisés dans le template => on les laisse accessibles
+  protected gameName = '';
+  protected tagLine = '';
+  protected loading = false;
+  protected error = '';
 
-  constructor(private api: RiotApiService, private router: Router) {}
+  private readonly api = inject(RiotApiService);
+  private readonly router = inject(Router);
+  private readonly destroyRef = inject(DestroyRef);
 
   search(): void {
     this.error = '';
+
     const gameName = this.gameName.trim();
     const tagLine = this.tagLine.trim();
 
@@ -30,23 +37,33 @@ export class Accueil {
 
     this.loading = true;
 
-    this.api.getAccountByRiotId(gameName, tagLine).subscribe({
-      next: (account) => {
-        this.loading = false;
-        this.router.navigate(['/joueur', account.puuid]);
-      },
-      error: (err) => {
-        this.loading = false;
+    this.api
+      .getAccountByRiotId(gameName, tagLine)
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        finalize(() => {
+          this.loading = false;
+        }),
+      )
+      .subscribe({
+        next: (account) => {
+          this.router.navigate(['/joueur', account.puuid]);
+        },
+        error: (err) => {
+          const status = err?.status;
 
-        const status = err?.status;
-        if (status === 404) {
-          this.error = 'Joueur introuvable. Vérifie le pseudo et le tag (ex: Pseudo#TAG).';
-        } else if (status === 429) {
-          this.error = 'Rate limit Riot (trop de requêtes). Réessaie dans quelques secondes.';
-        } else {
+          if (status === 404) {
+            this.error = 'Joueur introuvable. Vérifie le pseudo et le tag (ex: Pseudo#TAG).';
+            return;
+          }
+
+          if (status === 429) {
+            this.error = 'Rate limit Riot (trop de requêtes). Réessaie dans quelques secondes.';
+            return;
+          }
+
           this.error = 'Erreur serveur. Vérifie que le backend est lancé sur http://localhost:3000.';
-        }
-      },
-    });
+        },
+      });
   }
 }

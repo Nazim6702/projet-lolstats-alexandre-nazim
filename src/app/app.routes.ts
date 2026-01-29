@@ -1,23 +1,51 @@
 import { Routes } from '@angular/router';
 
-import { Accueil } from './accueil/accueil';
-import { Champions } from './champions/champions';
-import { Classement } from './classement/classement';
-import { Page404 } from './page404/page404';
-
-import { PlayerStats } from './player-stats/player-stats';
-import { ChampionDetails } from './champion-details/champion-details';
+import { AccueilComponent } from './accueil/accueil';
+import { ChampionsComponent } from './champions/champions';
+import { ChampionDetailsComponent } from './champion-details/champion-details';
+import { ClassementComponent } from './classement/classement';
+import { PlayerStatsComponent } from './player-stats/player-stats';
+import { Page404Component } from './page404/page404';
 
 export const routes: Routes = [
-  { path: '', redirectTo: 'accueil', pathMatch: 'full' },
+  // page par défaut
+  {
+    path: '',
+    redirectTo: 'accueil',
+    pathMatch: 'full',
+  },
 
-  { path: 'accueil', component: Accueil },
-  { path: 'joueur/:puuid', component: PlayerStats },
+  // accueil / recherche joueur
+  {
+    path: 'accueil',
+    component: AccueilComponent,
+  },
 
-  { path: 'champions', component: Champions },
-  { path: 'champions/:id', component: ChampionDetails },
+  // stats joueur
+  {
+    path: 'joueur/:puuid',
+    component: PlayerStatsComponent,
+  },
 
-  { path: 'classement', component: Classement },
+  // champions
+  {
+    path: 'champions',
+    component: ChampionsComponent,
+  },
+  {
+    path: 'champions/:id',
+    component: ChampionDetailsComponent,
+  },
 
-  { path: '**', component: Page404 },
+  // classement
+  {
+    path: 'classement',
+    component: ClassementComponent,
+  },
+
+  // 404
+  {
+    path: '**',
+    component: Page404Component,
+  },
 ];
