@@ -1,17 +1,91 @@
-/* Center the search block a bit */
 :host {
   display: block;
 }
 
-form {
-  max-width: 900px;
+.hero {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 2rem;
+  padding: 2.5rem;
+  border-radius: var(--radius-lg);
+  animation: floatIn 500ms ease both;
 }
 
-/* Inputs feel a bit nicer */
-.form-control {
-  border-radius: 0.6rem;
+.hero-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
-.btn {
-  border-radius: 0.6rem;
+.hero-title {
+  font-size: clamp(2rem, 3.5vw, 3.4rem);
+  line-height: 1.05;
+  margin: 0;
+}
+
+.hero-subtitle {
+  color: var(--text-1);
+  font-size: 1.05rem;
+  max-width: 30rem;
+}
+
+.hero-form {
+  display: grid;
+  gap: 1rem;
+  align-content: start;
+}
+
+.field {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.field-label {
+  font-size: 0.85rem;
+  color: var(--text-1);
+  letter-spacing: 0.2px;
+}
+
+.field-input {
+  padding: 0.85rem 1rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--stroke);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-0);
+  outline: none;
+  transition: all 140ms ease;
+}
+
+.field-input:focus {
+  border-color: rgba(255, 178, 0, 0.6);
+  box-shadow: 0 0 0 3px rgba(255, 178, 0, 0.15);
+}
+
+.cta-btn {
+  padding: 0.95rem 1.4rem;
+  border-radius: 999px;
+  border: none;
+  background: linear-gradient(120deg, var(--accent-0), var(--accent-1));
+  color: #10131a;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  transition: transform 140ms ease, box-shadow 140ms ease;
+  animation: pulseGlow 3s ease infinite;
+}
+
+.cta-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  animation: none;
+}
+
+.cta-btn:not(:disabled):hover {
+  transform: translateY(-2px);
+  box-shadow: 0 18px 40px rgba(255, 106, 61, 0.35);
+}
+
+@media (max-width: 720px) {
+  .hero {
+    padding: 1.8rem;
+  }
 }

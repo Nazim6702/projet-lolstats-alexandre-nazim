@@ -2,32 +2,80 @@
   display: block;
 }
 
-/* Filter buttons wrap nicely on small screens */
-.btn-group.flex-wrap > .btn {
-  margin-bottom: 0.5rem;
-  border-radius: 0.6rem;
+.section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 1.8rem;
+  border-radius: var(--radius-lg);
+  margin-bottom: 1.6rem;
+  animation: floatIn 500ms ease both;
 }
 
-/* Card styling */
-.card {
-  border-radius: 0.9rem;
+.section-subtitle {
+  color: var(--text-1);
+  margin-bottom: 0;
+}
+
+.role-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.role-btn {
+  padding: 0.4rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid var(--stroke);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text-1);
+  transition: all 140ms ease;
+}
+
+.role-btn.active {
+  background: linear-gradient(120deg, var(--accent-2), var(--accent-0));
+  color: #091018;
+  border-color: transparent;
+  font-weight: 600;
+}
+
+.card-link {
+  text-decoration: none;
+  color: inherit;
+}
+
+.champ-card {
+  background: rgba(18, 24, 38, 0.75);
+  border: 1px solid var(--stroke);
+  border-radius: var(--radius-md);
   overflow: hidden;
-  transition: transform 120ms ease, box-shadow 120ms ease;
+  transition: transform 160ms ease, box-shadow 160ms ease;
 }
 
-.card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 0.75rem 1.5rem rgba(0, 0, 0, 0.08);
+.champ-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
 }
 
-/* Champion square image */
-.card-img-top {
+.champ-img {
   width: 100%;
   aspect-ratio: 1 / 1;
   object-fit: cover;
 }
 
-/* Small tags */
-.badge {
-  border-radius: 999px;
+.champ-body {
+  padding: 1rem;
+}
+
+.champ-title {
+  color: var(--text-1);
+  margin-bottom: 0.8rem;
+}
+
+.tag-list {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
 }

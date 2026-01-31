@@ -1,8 +1,12 @@
-<h1 class="mb-3">Stats du joueur</h1>
-
-<p class="text-muted mb-2">Joueur :</p>
-<div class="alert alert-secondary py-2">
-  <code class="small">{{ riotId || playerName || puuid }}</code>
+<div class="section-head glass">
+  <div>
+    <p class="pill mb-2">Player card</p>
+    <h1 class="mb-1">Stats du joueur</h1>
+    <p class="section-subtitle">Riot ID et resume rapide des matchs recents.</p>
+  </div>
+  <div class="player-badge">
+    <code class="small">{{ riotId || playerName || puuid }}</code>
+  </div>
 </div>
 
 @if (loading) {
@@ -28,9 +32,9 @@
   @if (stats.count === 0) {
     <div class="alert alert-warning">Aucun match récent trouvé pour ce joueur.</div>
   } @else {
-    <div class="card mb-3">
-      <div class="card-body">
-        <h5 class="card-title">Résumé ({{ stats.count }} derniers matchs)</h5>
+    <div class="grid">
+      <div class="glass panel">
+        <h5 class="panel-title">Resume ({{ stats.count }} derniers matchs)</h5>
 
         <p class="mb-1">
           <strong>Winrate :</strong> {{ winratePercent }}%
@@ -46,14 +50,12 @@
           </p>
         }
       </div>
-    </div>
 
-    <div class="card">
-      <div class="card-body">
-        <h5 class="card-title">Champions favoris</h5>
+      <div class="glass panel">
+        <h5 class="panel-title">Champions favoris</h5>
 
         @if (stats.topChampions.length === 0) {
-          <p class="text-muted mb-0">Pas de données champion.</p>
+          <p class="text-muted mb-0">Pas de donnees champion.</p>
         } @else {
           <ul class="mb-0">
             @for (c of stats.topChampions; track c.championName) {

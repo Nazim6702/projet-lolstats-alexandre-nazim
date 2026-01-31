@@ -2,27 +2,73 @@
   display: block;
 }
 
-/* Big splash image */
-img.img-fluid {
-  border-radius: 1rem;
+.champion-hero {
+  display: grid;
+  grid-template-columns: minmax(240px, 360px) 1fr;
+  gap: 1.5rem;
+  align-items: stretch;
+  margin-bottom: 1.5rem;
 }
 
-/* Cards */
-.card {
-  border-radius: 0.9rem;
+.champion-meta {
+  padding: 1.8rem;
+  border-radius: var(--radius-lg);
 }
 
-/* Spell/passive icons */
+.subtitle {
+  color: var(--text-1);
+}
+
+.tag-list {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.splash {
+  border-radius: var(--radius-lg);
+  height: 100%;
+  object-fit: cover;
+  border: 1px solid var(--stroke);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1rem;
+}
+
+.panel {
+  padding: 1.5rem;
+  border-radius: var(--radius-lg);
+}
+
+.panel-title {
+  margin-bottom: 0.9rem;
+}
+
+.spell-row {
+  display: grid;
+  grid-template-columns: 64px 1fr;
+  gap: 1rem;
+  align-items: start;
+}
+
 img.rounded.border {
   border-radius: 0.9rem !important;
   background: #fff;
 }
 
-/* Description HTML from DDragon */
 :host ::ng-deep p {
   margin-bottom: 0.5rem;
 }
 
 :host ::ng-deep ul {
   margin-bottom: 0.5rem;
+}
+
+@media (max-width: 900px) {
+  .champion-hero {
+    grid-template-columns: 1fr;
+  }
 }

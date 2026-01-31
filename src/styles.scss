@@ -1,15 +1,121 @@
-/* Global look & feel */
-body {
-  background: #f8f9fa; // bootstrap-like gray
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Space+Grotesk:wght@400;600;700&display=swap');
+
+:root {
+  --bg-0: #0c0f14;
+  --bg-1: #121826;
+  --bg-2: #1a2236;
+  --text-0: #f5f7ff;
+  --text-1: #c7cedb;
+  --accent-0: #ffb200;
+  --accent-1: #ff6a3d;
+  --accent-2: #5bd1ff;
+  --card: rgba(18, 24, 38, 0.7);
+  --stroke: rgba(255, 255, 255, 0.08);
+  --shadow: 0 30px 80px rgba(0, 0, 0, 0.45);
+  --radius-lg: 18px;
+  --radius-md: 12px;
+  --radius-sm: 10px;
+  --font-display: 'Space Grotesk', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
-/* Better defaults */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-display);
+  color: var(--text-0);
+  background:
+    radial-gradient(1200px 600px at 10% -10%, rgba(255, 178, 0, 0.18), transparent 60%),
+    radial-gradient(900px 600px at 90% 0%, rgba(91, 209, 255, 0.18), transparent 60%),
+    radial-gradient(1000px 800px at 50% 120%, rgba(255, 106, 61, 0.2), transparent 65%),
+    linear-gradient(180deg, var(--bg-1), var(--bg-0));
+  min-height: 100vh;
+}
+
 img {
   max-width: 100%;
   height: auto;
 }
 
-/* Links inside cards */
 a {
   color: inherit;
+}
+
+.app-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-container {
+  width: min(1180px, 92vw);
+  margin: 0 auto;
+}
+
+.glass {
+  background: var(--card);
+  border: 1px solid var(--stroke);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(16px);
+}
+
+.pill {
+  padding: 0.3rem 0.75rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--stroke);
+  font-size: 0.8rem;
+  letter-spacing: 0.2px;
+}
+
+.glow-text {
+  background: linear-gradient(90deg, var(--accent-0), var(--accent-1));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.text-muted {
+  color: var(--text-1) !important;
+}
+
+.alert {
+  background: rgba(18, 24, 38, 0.9);
+  border: 1px solid var(--stroke);
+  color: var(--text-0);
+}
+
+.table {
+  color: var(--text-0);
+  --bs-table-bg: transparent;
+}
+
+.table-striped > tbody > tr:nth-of-type(odd) > * {
+  --bs-table-bg: rgba(255, 255, 255, 0.02);
+}
+
+@keyframes floatIn {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulseGlow {
+  0% {
+    box-shadow: 0 0 0 rgba(255, 178, 0, 0.0);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(255, 178, 0, 0.12);
+  }
+  100% {
+    box-shadow: 0 0 0 rgba(255, 178, 0, 0.0);
+  }
 }

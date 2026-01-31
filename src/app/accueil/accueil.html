@@ -1,41 +1,48 @@
-<h1 class="mb-3">LoL Stats</h1>
-<p class="text-muted">Recherche un joueur avec son Riot ID (pseudo + tag).</p>
-
-<form class="row g-3" (ngSubmit)="search()" #f="ngForm" novalidate>
-  <div class="col-md-6">
-    <label class="form-label" for="gameName">Pseudo</label>
-    <input
-      id="gameName"
-      type="text"
-      class="form-control"
-      name="gameName"
-      [(ngModel)]="gameName"
-      required
-      autocomplete="off"
-      placeholder="ex: Sumish"
-    />
+<section class="hero glass">
+  <div class="hero-text">
+    <span class="pill">Live Riot data</span>
+    <h1 class="hero-title">
+      Construis ton tableau de bord <span class="glow-text">LoL</span>.
+    </h1>
+    <p class="hero-subtitle">
+      Recherche un joueur par Riot ID et affiche ses stats et champions preferes.
+    </p>
   </div>
 
-  <div class="col-md-6">
-    <label class="form-label" for="tagLine">Tag</label>
-    <input
-      id="tagLine"
-      type="text"
-      class="form-control"
-      name="tagLine"
-      [(ngModel)]="tagLine"
-      required
-      autocomplete="off"
-      placeholder="ex: QLF"
-    />
-  </div>
+  <form class="hero-form" (ngSubmit)="search()" #f="ngForm" novalidate>
+    <div class="field">
+      <label class="field-label" for="gameName">Pseudo</label>
+      <input
+        id="gameName"
+        type="text"
+        class="field-input"
+        name="gameName"
+        [(ngModel)]="gameName"
+        required
+        autocomplete="off"
+        placeholder="ex: Sumish"
+      />
+    </div>
 
-  <div class="col-12">
-    <button class="btn btn-primary" type="submit" [disabled]="f.invalid || loading">
-      @if (loading) { Recherche... } @else { Rechercher }
+    <div class="field">
+      <label class="field-label" for="tagLine">Tag</label>
+      <input
+        id="tagLine"
+        type="text"
+        class="field-input"
+        name="tagLine"
+        [(ngModel)]="tagLine"
+        required
+        autocomplete="off"
+        placeholder="ex: QLF"
+      />
+    </div>
+
+    <button class="cta-btn" type="submit" [disabled]="f.invalid || loading">
+      @if (loading) { Recherche... } @else { Scanner le joueur }
     </button>
-  </div>
-</form>
+  </form>
+</section>
 
 @if (error) {
   <div class="alert alert-danger mt-3 mb-0">{{ error }}</div>

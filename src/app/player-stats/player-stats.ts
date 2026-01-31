@@ -67,7 +67,7 @@ export class PlayerStatsComponent {
     this.loading = true;
 
     return forkJoin({
-      stats: this.api.getRecentStats(puuid, 20),
+      stats: this.api.getRecentStats(puuid, 10),
       profile: this.api.getProfile(puuid).pipe(catchError(() => of(null))),
     }).pipe(
       map(({ stats, profile }) => {

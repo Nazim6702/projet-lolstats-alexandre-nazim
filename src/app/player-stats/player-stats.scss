@@ -2,16 +2,49 @@
   display: block;
 }
 
-/* Make summary cards consistent */
-.card {
-  border-radius: 0.8rem;
+.section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 1.8rem;
+  border-radius: var(--radius-lg);
+  margin-bottom: 1.6rem;
+  animation: floatIn 500ms ease both;
+}
+
+.section-subtitle {
+  color: var(--text-1);
+  margin-bottom: 0;
+}
+
+.player-badge {
+  padding: 0.6rem 0.9rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--stroke);
+  background: rgba(255, 255, 255, 0.05);
+  font-family: var(--font-mono);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1rem;
+}
+
+.panel {
+  padding: 1.5rem;
+  border-radius: var(--radius-lg);
+}
+
+.panel-title {
+  margin-bottom: 0.9rem;
 }
 
 .alert {
-  border-radius: 0.8rem;
+  border-radius: var(--radius-md);
 }
 
-/* Champions list spacing */
 ul {
   padding-left: 1.2rem;
 }

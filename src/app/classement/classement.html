@@ -1,16 +1,16 @@
-<div class="d-flex align-items-center justify-content-between mb-3">
+<div class="section-head glass">
   <div>
-    <h1 class="mb-1">Classement global</h1>
-    <p class="text-muted mb-0">Top joueurs ({{ queue }})</p>
+    <p class="pill mb-2">Global ladder</p>
+    <h1 class="mb-1">Classement</h1>
+    <p class="section-subtitle">Top joueurs ({{ queue }})</p>
   </div>
 
-  <div class="btn-group" role="group" aria-label="Filtrer par tier">
+  <div class="tier-filters" role="group" aria-label="Filtrer par tier">
     @for (t of tiers; track t.key) {
       <button
         type="button"
-        class="btn"
-        [class.btn-primary]="tier === t.key"
-        [class.btn-outline-primary]="tier !== t.key"
+        class="tier-btn"
+        [class.active]="tier === t.key"
         (click)="setTier(t.key)"
       >
         {{ t.label }}
@@ -29,9 +29,9 @@
     </button>
   </div>
 } @else if (data) {
-  <div class="mb-3">
-    <span class="badge text-bg-secondary me-2">{{ data.tier }}</span>
-    <span class="badge text-bg-secondary">{{ data.queue }}</span>
+  <div class="mb-3 d-flex gap-2 flex-wrap">
+    <span class="pill">{{ data.tier }}</span>
+    <span class="pill">{{ data.queue }}</span>
   </div>
 
   @if (entries.length === 0) {
@@ -44,7 +44,7 @@
       <div class="btn-group" role="group" aria-label="Pagination">
         <button
           type="button"
-          class="btn btn-sm btn-outline-primary"
+          class="pager-btn"
           [disabled]="page <= 1"
           (click)="goToPage(page - 1)"
         >
@@ -52,7 +52,7 @@
         </button>
         <button
           type="button"
-          class="btn btn-sm btn-outline-primary"
+          class="pager-btn"
           [disabled]="page >= totalPages"
           (click)="goToPage(page + 1)"
         >
@@ -61,8 +61,8 @@
       </div>
     </div>
 
-    <div class="table-responsive">
-      <table class="table table-striped align-middle mb-0">
+    <div class="table-wrap glass">
+      <table class="table align-middle mb-0">
         <thead>
         <tr>
           <th scope="col">#</th>
@@ -85,7 +85,7 @@
                   @if (e.rank) { <span class="ms-1">({{ e.rank }})</span> }
                 </span>
 
-                <a class="btn btn-sm btn-outline-primary" [routerLink]="['/joueur', e.puuid]">
+                <a class="stats-btn" [routerLink]="['/joueur', e.puuid]">
                   Stats
                 </a>
               </td>

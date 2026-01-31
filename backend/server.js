@@ -165,7 +165,7 @@ app.get("/api/matches/recent-ids/:puuid", async (req, res) => {
   try {
     const { puuid } = req.params;
     const start = req.query.start ?? 0;
-    const count = req.query.count ?? 20;
+    const count = req.query.count ?? 10;
 
     const url = `${RIOT_REGIONAL_BASE}/lol/match/v5/matches/by-puuid/${safeEncode(
       puuid
@@ -270,12 +270,12 @@ app.listen(PORT, () => {
 
 /**
  * Stats récentes calculées
- * GET /api/player/recent-stats/:puuid?count=20
+ * GET /api/player/recent-stats/:puuid?count=10
  */
 app.get("/api/player/recent-stats/:puuid", async (req, res) => {
   try {
     const { puuid } = req.params;
-    const count = Math.min(Number(req.query.count ?? 20), 20); // sécurité
+    const count = Math.min(Number(req.query.count ?? 10), 20); // sécurité
     const start = 0;
 
     // 1) Récupérer les IDs
@@ -368,4 +368,5 @@ app.get("/api/player/recent-stats/:puuid", async (req, res) => {
     });
   }
 });
+
 
