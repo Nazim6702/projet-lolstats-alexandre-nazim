@@ -501,6 +501,8 @@ app.get("/api/player/recent-stats/:puuid", async (req, res) => {
       recentMatches.push({
         matchId: m?.metadata?.matchId,
         queueId: m?.info?.queueId,
+        gameMode: m?.info?.gameMode,
+        gameType: m?.info?.gameType,
         gameCreation: m?.info?.gameCreation,
         gameDuration: m?.info?.gameDuration,
         championName: me.championName,

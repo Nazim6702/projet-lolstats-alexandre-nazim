@@ -116,14 +116,18 @@
                   <div>
                     <div class="summary-title">{{ m.championName }}</div>
                     <div class="text-muted small">
-                      {{ m.roleLabel || m.teamPosition || '—' }} · {{ m.kills }}/{{ m.deaths }}/{{ m.assists }}
+                      {{ getRoleLabel(m) }} · {{ m.kills }}/{{ m.deaths }}/{{ m.assists }}
                       · {{ (m.gameDuration ?? 0) / 60 | number:'1.0-0' }} min
+                      @if (formatMatchDate(m)) { · {{ formatMatchDate(m) }} }
                     </div>
                   </div>
                 </div>
-                <span class="result" [class.win]="m.win" [class.loss]="!m.win">
-                  {{ m.win ? 'Win' : 'Loss' }}
-                </span>
+                <div class="summary-right">
+                  <span class="result" [class.win]="m.win" [class.loss]="!m.win">
+                    {{ m.win ? 'Win' : 'Loss' }}
+                  </span>
+                  <span class="queue-pill">{{ getQueueLabel(m) }}</span>
+                </div>
               </summary>
 
               @if (m.participants?.length) {
@@ -143,7 +147,10 @@
                         <tbody>
                           @for (p of getTeamParticipants(m, 100); track p.puuid) {
                             <tr>
-                              <td class="small">{{ p.riotId || p.summonerName }}</td>
+                              <td>
+                                <div class="small">{{ p.riotId || p.summonerName }}</div>
+                                <div class="text-muted small">{{ getParticipantRole(p) }}</div>
+                              </td>
                               <td class="d-flex align-items-center gap-2">
                                 <img
                                   class="champ-icon"
@@ -176,7 +183,10 @@
                         <tbody>
                           @for (p of getTeamParticipants(m, 200); track p.puuid) {
                             <tr>
-                              <td class="small">{{ p.riotId || p.summonerName }}</td>
+                              <td>
+                                <div class="small">{{ p.riotId || p.summonerName }}</div>
+                                <div class="text-muted small">{{ getParticipantRole(p) }}</div>
+                              </td>
                               <td class="d-flex align-items-center gap-2">
                                 <img
                                   class="champ-icon"

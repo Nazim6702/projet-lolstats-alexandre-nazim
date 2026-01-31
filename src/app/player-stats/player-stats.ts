@@ -5,7 +5,8 @@ import { finalize, map, switchMap, catchError } from 'rxjs/operators';
 import { forkJoin, of } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
-import { RiotApiService, RecentStatsDTO } from '../services/riot-api';
+import { RiotApiService } from '../services/riot-api';
+import { RecentStatsDTO } from '../models/riot';
 import { ChampionsService } from '../services/champions';
 
 type RecentMatch = NonNullable<RecentStatsDTO['recentMatches']>[number];
@@ -80,6 +81,47 @@ export class PlayerStatsComponent {
 
   protected getTeamParticipants(match: RecentMatch | undefined, teamId: number): MatchParticipant[] {
     return match?.participants?.filter((p: MatchParticipant) => p.teamId === teamId) ?? [];
+  }
+
+  protected getQueueLabel(match: RecentMatch | undefined): string {
+    const queueId = match?.queueId;
+    if (queueId === 420) return 'SoloQ';
+    if (queueId === 440) return 'Flex';
+    if (queueId === 450) return 'ARAM';
+    if (match?.gameMode) return match.gameMode;
+    if (match?.gameType) return match.gameType;
+    return 'Unknown';
+  }
+
+  protected getRoleLabel(match: RecentMatch | undefined): string {
+    if (!match) return 'Unknown';
+    const roleLabel = match.roleLabel;
+    if (roleLabel && roleLabel !== 'Unknown') return roleLabel;
+    return this.normalizeRole(match.teamPosition, match.lane, match.role);
+  }
+
+  protected getParticipantRole(p: MatchParticipant | undefined): string {
+    if (!p) return 'Unknown';
+    return this.normalizeRole(p.teamPosition, p.lane, p.role);
+  }
+
+  protected formatMatchDate(match: RecentMatch | undefined): string {
+    const ts = match?.gameCreation;
+    if (!ts) return '';
+    return new Intl.DateTimeFormat('fr-FR', {
+      dateStyle: 'medium',
+      timeStyle: 'short',
+    }).format(new Date(ts));
+  }
+
+  private normalizeRole(teamPosition?: string, lane?: string, role?: string): string {
+    if (teamPosition === 'TOP' || lane === 'TOP') return 'Top';
+    if (teamPosition === 'JUNGLE' || lane === 'JUNGLE') return 'Jungle';
+    if (teamPosition === 'MIDDLE' || lane === 'MIDDLE') return 'Mid';
+    if (teamPosition === 'BOTTOM') return role?.includes('SUPPORT') ? 'Support' : 'ADC';
+    if (teamPosition === 'UTILITY') return 'Support';
+    if (lane === 'BOTTOM') return role?.includes('SUPPORT') ? 'Support' : 'ADC';
+    return 'Unknown';
   }
 
   private fetchStats$(puuid: string, refresh: boolean) {

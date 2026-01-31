@@ -4,7 +4,8 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 
 
-import { RiotApiService, RankingEntryDTO, RankingTier } from '../services/riot-api';
+import { RiotApiService } from '../services/riot-api';
+import { RankingEntryDTO, RankingTier } from '../models/riot';
 import { ChampionsService } from '../services/champions';
 import {SlicePipe} from '@angular/common';
 

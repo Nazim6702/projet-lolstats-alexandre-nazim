@@ -1,32 +1,13 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, map, shareReplay, switchMap } from 'rxjs';
-
-export type ChampionClassTag =
-  | 'Fighter'
-  | 'Tank'
-  | 'Mage'
-  | 'Assassin'
-  | 'Marksman'
-  | 'Support';
-
-export type RoleFilter = 'ALL' | 'TOP' | 'JUNGLE' | 'MID' | 'ADC' | 'SUPPORT';
-
-export interface DDragonChampionSummary {
-  version: string;
-  id: string;
-  key: string;
-  name: string;
-  title: string;
-  blurb: string;
-  tags: ChampionClassTag[];
-  image: { full: string };
-}
-
-interface DDragonChampionListResponse {
-  version: string;
-  data: Record<string, DDragonChampionSummary>;
-}
+import {
+  DDragonChampionListResponse,
+  DDragonChampionDetailsResponse,
+  DDragonChampionDetails,
+  DDragonChampionSummary,
+  RoleFilter,
+} from '../models/champions';
 
 @Injectable({
   providedIn: 'root',
@@ -120,28 +101,5 @@ export class ChampionsService {
     return `${this.ddragonBase}/cdn/img/champion/splash/${encodeURIComponent(champId)}_0.jpg`;
   }
 
-}
-
-export interface DDragonChampionSpell {
-  id: string;
-  name: string;
-  description: string;
-  tooltip: string;
-  image: { full: string };
-}
-
-export interface DDragonChampionDetails {
-  id: string;
-  name: string;
-  title: string;
-  lore: string;
-  tags: string[];
-  spells: DDragonChampionSpell[];
-  passive: { name: string; description: string; image: { full: string } };
-  image: { full: string };
-}
-
-interface DDragonChampionDetailsResponse {
-  data: Record<string, DDragonChampionDetails>;
 }
 

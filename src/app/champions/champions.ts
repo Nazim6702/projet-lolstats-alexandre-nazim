@@ -3,7 +3,8 @@ import { RouterLink } from '@angular/router';
 import { finalize, switchMap } from 'rxjs/operators';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
-import { ChampionsService, DDragonChampionSummary, RoleFilter } from '../services/champions';
+import { ChampionsService } from '../services/champions';
+import { DDragonChampionSummary, RoleFilter } from '../models/champions';
 
 type ChampionCardVm = DDragonChampionSummary & {
   imageUrl: string;

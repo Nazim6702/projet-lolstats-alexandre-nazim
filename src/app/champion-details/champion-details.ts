@@ -4,7 +4,8 @@ import { finalize, map, switchMap } from 'rxjs/operators';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { forkJoin, of } from 'rxjs';
 
-import { ChampionsService, DDragonChampionDetails } from '../services/champions';
+import { ChampionsService } from '../services/champions';
+import { DDragonChampionDetails } from '../models/champions';
 
 type ChampionDetailsVm = DDragonChampionDetails & {
   splashUrl: string;
