@@ -54,7 +54,10 @@
     <div class="d-flex flex-column gap-3">
       @for (s of champion.spellsVm; track s.id) {
         <div class="spell-row">
-          <img width="64" height="64" class="rounded border" [src]="s.imgUrl" [alt]="s.name" />
+          <div class="spell-icon">
+            <img width="64" height="64" class="rounded border" [src]="s.imgUrl" [alt]="s.name" />
+            <span class="spell-key">{{ s.key }}</span>
+          </div>
           <div>
             <h6 class="mb-1">{{ s.name }}</h6>
             <div [innerHTML]="s.description"></div>

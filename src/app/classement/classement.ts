@@ -5,6 +5,7 @@ import { RouterLink } from '@angular/router';
 
 
 import { RiotApiService, RankingEntryDTO, RankingTier } from '../services/riot-api';
+import { ChampionsService } from '../services/champions';
 import {SlicePipe} from '@angular/common';
 
 type RankingEntryVm = RankingEntryDTO & { winrate: number };
@@ -34,14 +35,23 @@ export class ClassementComponent {
   protected tier: RankingTier = 'challenger';
   protected page = 1;
   protected totalPages = 1;
+  protected cached = false;
 
   protected data: { tier: string; queue: string } | null = null;
   protected entries: RankingEntryVm[] = [];
+  protected version = '';
 
   private readonly api = inject(RiotApiService);
+  private readonly championsService = inject(ChampionsService);
   private readonly destroyRef = inject(DestroyRef);
 
   constructor() {
+    this.championsService
+      .getVersion()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((v) => {
+        this.version = v;
+      });
     this.fetch();
   }
 
@@ -59,15 +69,16 @@ export class ClassementComponent {
     this.fetch();
   }
 
-  protected fetch(): void {
+  protected fetch(refresh: boolean = false): void {
     this.loading = true;
     this.error = '';
     this.entries = [];
     this.data = null;
     this.totalPages = 1;
+    this.cached = false;
 
     this.api
-      .getRanking(this.tier, this.queue, this.page, this.pageSize)
+      .getRanking(this.tier, this.queue, this.page, this.pageSize, refresh)
       .pipe(
         takeUntilDestroyed(this.destroyRef),
         finalize(() => {
@@ -79,6 +90,7 @@ export class ClassementComponent {
           this.data = { tier: res.tier, queue: res.queue };
           const totalEntries = res.totalEntries ?? res.entries.length;
           this.totalPages = Math.max(1, Math.ceil(totalEntries / this.pageSize));
+          this.cached = Boolean(res.cached);
 
           this.entries = res.entries.map((e) => ({
             ...e,

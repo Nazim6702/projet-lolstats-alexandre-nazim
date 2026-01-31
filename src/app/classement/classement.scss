@@ -13,6 +13,25 @@
   animation: floatIn 500ms ease both;
 }
 
+.status-badge {
+  padding: 0.3rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  letter-spacing: 0.3px;
+  border: 1px solid var(--stroke);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.status-badge.live {
+  color: #0f141b;
+  background: linear-gradient(120deg, var(--accent-0), var(--accent-1));
+  border-color: transparent;
+}
+
+.status-badge.cache {
+  color: var(--text-1);
+}
+
 .section-subtitle {
   color: var(--text-1);
   margin-bottom: 0;
@@ -25,6 +44,9 @@
 }
 
 .tier-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
   padding: 0.45rem 0.9rem;
   border-radius: 999px;
   border: 1px solid var(--stroke);
@@ -38,6 +60,11 @@
   color: #10131a;
   border-color: transparent;
   font-weight: 600;
+}
+
+.tier-icon {
+  width: 20px;
+  height: 20px;
 }
 
 .pager-btn {
@@ -94,4 +121,19 @@ td.fw-bold {
 .stats-btn:hover {
   transform: translateY(-1px);
   border-color: var(--accent-2);
+}
+
+.player-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.player-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  border: 1px solid var(--stroke);
+  background: rgba(255, 255, 255, 0.04);
+  flex: 0 0 auto;
 }

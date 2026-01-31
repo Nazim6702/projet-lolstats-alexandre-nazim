@@ -10,7 +10,7 @@ type ChampionDetailsVm = DDragonChampionDetails & {
   splashUrl: string;
   passiveImgUrl: string;
   spellsVm: Array<
-    DDragonChampionDetails['spells'][number] & { imgUrl: string }
+    DDragonChampionDetails['spells'][number] & { imgUrl: string; key: string }
   >;
 };
 
@@ -70,9 +70,11 @@ export class ChampionDetailsComponent {
           details.passive.image.full,
         );
 
-        const spellsVm = details.spells.map((s) => ({
+        const spellKeys = ['Q', 'W', 'E', 'R'];
+        const spellsVm = details.spells.map((s, index) => ({
           ...s,
           imgUrl: this.championsService.getSpellImageUrl(version, s.image.full),
+          key: spellKeys[index] ?? '',
         }));
 
         const vm: ChampionDetailsVm = {

@@ -5,7 +5,16 @@
     <p class="section-subtitle">Riot ID et resume rapide des matchs recents.</p>
   </div>
   <div class="player-badge">
-    <code class="small">{{ riotId || playerName || puuid }}</code>
+    <code class="riot-id">{{ riotId || playerName || puuid }}</code>
+  </div>
+  <button class="refresh-btn" type="button" [disabled]="loading" (click)="fetchStats(true)">
+    Actualiser
+  </button>
+  <button class="mode-btn" type="button" [disabled]="loading" (click)="toggleMode()">
+    {{ mode === 'ranked' ? 'Compétitif uniquement' : 'Tous modes' }}
+  </button>
+  <div class="status-badge" [class.live]="!cached" [class.cache]="cached">
+    {{ cached ? 'Cache' : 'Live' }}
   </div>
 </div>
 
@@ -21,7 +30,7 @@
     <button
       class="btn btn-sm btn-outline-light ms-2"
       type="button"
-      (click)="fetchStats()"
+      (click)="fetchStats(true)"
     >
       Réessayer
     </button>
@@ -36,19 +45,26 @@
       <div class="glass panel">
         <h5 class="panel-title">Resume ({{ stats.count }} derniers matchs)</h5>
 
-        <p class="mb-1">
-          <strong>Winrate :</strong> {{ winratePercent }}%
-          ({{ stats.wins }}W / {{ stats.losses }}L)
-        </p>
+        <div class="winrate-row">
+          <div class="winrate-chart" [style.background]="winrateGradient">
+            <span>{{ winratePercent }}%</span>
+          </div>
+          <div>
+            <p class="mb-1">
+              <strong>Winrate :</strong> {{ winratePercent }}%
+              ({{ stats.wins }}W / {{ stats.losses }}L)
+            </p>
+            @if (stats.avgKda) {
+              <p class="mb-0">
+                <strong>KDA moyen :</strong>
+                {{ stats.avgKda.kills | number:'1.1-1' }} /
+                {{ stats.avgKda.deaths | number:'1.1-1' }} /
+                {{ stats.avgKda.assists | number:'1.1-1' }}
+              </p>
+            }
+          </div>
+        </div>
 
-        @if (stats.avgKda) {
-          <p class="mb-0">
-            <strong>KDA moyen :</strong>
-            {{ stats.avgKda.kills | number:'1.1-1' }} /
-            {{ stats.avgKda.deaths | number:'1.1-1' }} /
-            {{ stats.avgKda.assists | number:'1.1-1' }}
-          </p>
-        }
       </div>
 
       <div class="glass panel">
@@ -57,13 +73,132 @@
         @if (stats.topChampions.length === 0) {
           <p class="text-muted mb-0">Pas de donnees champion.</p>
         } @else {
-          <ul class="mb-0">
+          <ul class="mb-0 champ-list">
             @for (c of stats.topChampions; track c.championName) {
-              <li>{{ c.championName }} — {{ c.games }} game(s)</li>
+              <li>
+                <img
+                  class="champ-icon"
+                  [src]="version ? 'https://ddragon.leagueoflegends.com/cdn/' + version + '/img/champion/' + c.championName + '.png' : ''"
+                  [alt]="c.championName"
+                />
+                <span>{{ c.championName }}</span>
+                <span class="text-muted">— {{ c.games }} game(s)</span>
+              </li>
             }
           </ul>
         }
       </div>
     </div>
+
+    <div class="grid mt-3">
+      <div class="glass panel">
+        <h5 class="panel-title">Role principal (estime)</h5>
+        <div class="role-pill">{{ stats.primaryRole ?? 'Unknown' }}</div>
+        <p class="text-muted small mb-0">
+          Estime a partir des 10 derniers matchs.
+        </p>
+      </div>
+    </div>
+
+    @if (stats.recentMatches?.length) {
+      <div class="glass panel mt-3">
+        <h5 class="panel-title">Details des matchs</h5>
+        <div class="match-list">
+          @for (m of stats.recentMatches; track m.matchId) {
+            <details class="match-card">
+              <summary>
+                <div class="summary-left">
+                  <img
+                    class="champ-icon"
+                    [src]="version && m.championName ? 'https://ddragon.leagueoflegends.com/cdn/' + version + '/img/champion/' + m.championName + '.png' : ''"
+                    [alt]="m.championName"
+                  />
+                  <div>
+                    <div class="summary-title">{{ m.championName }}</div>
+                    <div class="text-muted small">
+                      {{ m.roleLabel || m.teamPosition || '—' }} · {{ m.kills }}/{{ m.deaths }}/{{ m.assists }}
+                      · {{ (m.gameDuration ?? 0) / 60 | number:'1.0-0' }} min
+                    </div>
+                  </div>
+                </div>
+                <span class="result" [class.win]="m.win" [class.loss]="!m.win">
+                  {{ m.win ? 'Win' : 'Loss' }}
+                </span>
+              </summary>
+
+              @if (m.participants?.length) {
+                <div class="teams">
+                  <div class="team">
+                    <div class="team-title">Equipe bleue</div>
+                    <div class="table-wrap mt-2">
+                      <table class="table align-middle mb-0">
+                        <thead>
+                        <tr>
+                          <th>Joueur</th>
+                          <th>Champion</th>
+                          <th class="text-end">K / D / A</th>
+                          <th class="text-end">CS</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                          @for (p of getTeamParticipants(m, 100); track p.puuid) {
+                            <tr>
+                              <td class="small">{{ p.riotId || p.summonerName }}</td>
+                              <td class="d-flex align-items-center gap-2">
+                                <img
+                                  class="champ-icon"
+                                  [src]="version && p.championName ? 'https://ddragon.leagueoflegends.com/cdn/' + version + '/img/champion/' + p.championName + '.png' : ''"
+                                  [alt]="p.championName"
+                                />
+                                <span>{{ p.championName }}</span>
+                              </td>
+                              <td class="text-end">{{ p.kills }}/{{ p.deaths }}/{{ p.assists }}</td>
+                              <td class="text-end">{{ p.totalMinionsKilled ?? 0 }}</td>
+                            </tr>
+                          }
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  <div class="team">
+                    <div class="team-title">Equipe rouge</div>
+                    <div class="table-wrap mt-2">
+                      <table class="table align-middle mb-0">
+                        <thead>
+                        <tr>
+                          <th>Joueur</th>
+                          <th>Champion</th>
+                          <th class="text-end">K / D / A</th>
+                          <th class="text-end">CS</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                          @for (p of getTeamParticipants(m, 200); track p.puuid) {
+                            <tr>
+                              <td class="small">{{ p.riotId || p.summonerName }}</td>
+                              <td class="d-flex align-items-center gap-2">
+                                <img
+                                  class="champ-icon"
+                                  [src]="version && p.championName ? 'https://ddragon.leagueoflegends.com/cdn/' + version + '/img/champion/' + p.championName + '.png' : ''"
+                                  [alt]="p.championName"
+                                />
+                                <span>{{ p.championName }}</span>
+                              </td>
+                              <td class="text-end">{{ p.kills }}/{{ p.deaths }}/{{ p.assists }}</td>
+                              <td class="text-end">{{ p.totalMinionsKilled ?? 0 }}</td>
+                            </tr>
+                          }
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              }
+            </details>
+          }
+        </div>
+      </div>
+    }
   }
 }

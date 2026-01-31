@@ -4,6 +4,9 @@
     <h1 class="mb-1">Classement</h1>
     <p class="section-subtitle">Top joueurs ({{ queue }})</p>
   </div>
+  <div class="status-badge" [class.live]="!cached" [class.cache]="cached">
+    {{ cached ? 'Cache' : 'Live' }}
+  </div>
 
   <div class="tier-filters" role="group" aria-label="Filtrer par tier">
     @for (t of tiers; track t.key) {
@@ -13,6 +16,7 @@
         [class.active]="tier === t.key"
         (click)="setTier(t.key)"
       >
+        <img class="tier-icon" [src]="'assets/ranks/' + t.key + '.png'" [alt]="t.label" />
         {{ t.label }}
       </button>
     }
@@ -42,6 +46,14 @@
         Page {{ page }} / {{ totalPages }} · {{ pageSize }} joueurs par page
       </div>
       <div class="btn-group" role="group" aria-label="Pagination">
+        <button
+          type="button"
+          class="pager-btn"
+          [disabled]="loading"
+          (click)="fetch(true)"
+        >
+          Actualiser
+        </button>
         <button
           type="button"
           class="pager-btn"
@@ -80,9 +92,16 @@
               <th scope="row">{{ i + 1 }}</th>
 
               <td class="d-flex align-items-center justify-content-between gap-2">
-                <span class="text-muted small">
-                  {{ e.riotId ?? e.summonerName ?? (e.puuid | slice:0:10) + '…' }}
-                  @if (e.rank) { <span class="ms-1">({{ e.rank }})</span> }
+                <span class="player-cell">
+                  <img
+                    class="player-icon"
+                    [src]="version && e.profileIconId != null ? 'https://ddragon.leagueoflegends.com/cdn/' + version + '/img/profileicon/' + e.profileIconId + '.png' : ''"
+                    [alt]="e.riotId ?? 'Joueur'"
+                  />
+                  <span class="text-muted small">
+                    {{ e.riotId ?? e.summonerName ?? (e.puuid | slice:0:10) + '…' }}
+                    @if (e.rank) { <span class="ms-1">({{ e.rank }})</span> }
+                  </span>
                 </span>
 
                 <a class="stats-btn" [routerLink]="['/joueur', e.puuid]">

@@ -31,6 +31,34 @@ function safeEncode(v) {
   return encodeURIComponent(String(v));
 }
 
+const cache = {
+  ranking: new Map(),
+  recentStats: new Map(),
+  accountByPuuid: new Map(),
+  profileByPuuid: new Map(),
+  rankByPuuid: new Map(),
+  summonerIdByPuuid: new Map(),
+};
+
+const CACHE_TTL = {
+  rankingMs: 2 * 60 * 1000,
+  recentStatsMs: 3 * 60 * 1000,
+  accountMs: 10 * 60 * 1000,
+  profileMs: 5 * 60 * 1000,
+  rankMs: 10 * 60 * 1000,
+};
+
+function getCache(map, key) {
+  const hit = map.get(key);
+  if (hit && hit.expiresAt > Date.now()) return hit.value;
+  if (hit) map.delete(key);
+  return null;
+}
+
+function setCache(map, key, value, ttlMs) {
+  map.set(key, { value, expiresAt: Date.now() + ttlMs });
+}
+
 async function mapWithConcurrency(items, limit, mapper) {
   const results = new Array(items.length);
   let index = 0;
@@ -58,6 +86,56 @@ async function fetchAccountByPuuid(puuid) {
   )}`;
   const r = await riot.get(url);
   return r.data;
+}
+
+async function fetchAccountByPuuidCached(puuid) {
+  const cached = getCache(cache.accountByPuuid, puuid);
+  if (cached) return cached;
+  const data = await fetchAccountByPuuid(puuid);
+  setCache(cache.accountByPuuid, puuid, data, CACHE_TTL.accountMs);
+  return data;
+}
+
+async function fetchProfileByPuuidCached(puuid) {
+  const cached = getCache(cache.profileByPuuid, puuid);
+  if (cached) return cached;
+  const data = await fetchSummonerByPuuid(puuid);
+  setCache(cache.profileByPuuid, puuid, data, CACHE_TTL.profileMs);
+  if (data?.id) {
+    setCache(cache.summonerIdByPuuid, puuid, data.id, CACHE_TTL.profileMs);
+  }
+  return data;
+}
+
+async function fetchLeagueEntriesBySummonerId(summonerId) {
+  const url = `${RIOT_PLATFORM_BASE}/lol/league/v4/entries/by-summoner/${safeEncode(
+    summonerId
+  )}`;
+  const r = await riot.get(url);
+  return r.data;
+}
+
+async function fetchRankByPuuidCached(puuid, refresh) {
+  const cached = getCache(cache.rankByPuuid, puuid);
+  if (cached && !refresh) return { ...cached, cached: true };
+
+  const profile = refresh
+    ? await fetchSummonerByPuuid(puuid)
+    : await fetchProfileByPuuidCached(puuid);
+  if (refresh && profile) {
+    setCache(cache.profileByPuuid, puuid, profile, CACHE_TTL.profileMs);
+  }
+
+  const summonerId =
+    profile?.id ?? getCache(cache.summonerIdByPuuid, puuid);
+  if (!summonerId) {
+    return { entries: [], error: "summoner_id_missing", cached: false };
+  }
+
+  const entries = await fetchLeagueEntriesBySummonerId(summonerId);
+  const response = { entries, cached: false };
+  setCache(cache.rankByPuuid, puuid, response, CACHE_TTL.rankMs);
+  return response;
 }
 
 app.get("/api/health", (req, res) => {
@@ -123,17 +201,20 @@ app.get("/api/player/by-riot-id/:gameName/:tagLine", async (req, res) => {
 app.get("/api/player/profile/:puuid", async (req, res) => {
   try {
     const { puuid } = req.params;
+    const refresh = String(req.query.refresh ?? "false") === "true";
     const url = `${RIOT_PLATFORM_BASE}/lol/summoner/v4/summoners/by-puuid/${safeEncode(
       puuid
     )}`;
 
     const [summonerResp, accountResp] = await Promise.allSettled([
-      riot.get(url),
-      fetchAccountByPuuid(puuid),
+      refresh ? riot.get(url) : fetchProfileByPuuidCached(puuid),
+      refresh ? fetchAccountByPuuid(puuid) : fetchAccountByPuuidCached(puuid),
     ]);
 
     const summonerData =
-      summonerResp.status === "fulfilled" ? summonerResp.value.data : {};
+      summonerResp.status === "fulfilled"
+        ? summonerResp.value.data ?? summonerResp.value
+        : {};
     const accountData =
       accountResp.status === "fulfilled" ? accountResp.value : {};
 
@@ -151,6 +232,30 @@ app.get("/api/player/profile/:puuid", async (req, res) => {
   } catch (e) {
     res.status(e.response?.status || 500).json({
       message: "Erreur Riot (profile)",
+      status: e.response?.status,
+      data: e.response?.data,
+    });
+  }
+});
+
+/**
+ * Rank actuel (solo/flex)
+ * GET /api/player/rank/:puuid
+ */
+app.get("/api/player/rank/:puuid", async (req, res) => {
+  try {
+    const { puuid } = req.params;
+    const refresh = String(req.query.refresh ?? "false") === "true";
+    const result = await fetchRankByPuuidCached(puuid, refresh);
+    res.json(result);
+  } catch (e) {
+    console.error("Rank error:", {
+      message: e?.message,
+      status: e?.response?.status,
+      data: e?.response?.data,
+    });
+    res.status(e.response?.status || 500).json({
+      message: "Erreur Riot (rank)",
       status: e.response?.status,
       data: e.response?.data,
     });
@@ -215,6 +320,7 @@ app.get("/api/ranking/:tier", async (req, res) => {
     const queue = req.query.queue ?? "RANKED_SOLO_5x5";
     const limit = Math.max(1, Math.min(Number(req.query.limit ?? 15), 50));
     const page = Math.max(1, Number(req.query.page ?? 1));
+    const refresh = String(req.query.refresh ?? "false") === "true";
 
     const tierLower = String(tier).toLowerCase();
     const allowed = ["challenger", "grandmaster", "master"];
@@ -223,6 +329,12 @@ app.get("/api/ranking/:tier", async (req, res) => {
         message: "tier invalide",
         allowed,
       });
+    }
+
+    const cacheKey = `${tierLower}|${queue}|${page}|${limit}`;
+    if (!refresh) {
+      const cached = getCache(cache.ranking, cacheKey);
+      if (cached) return res.json({ ...cached, cached: true });
     }
 
     const url = `${RIOT_PLATFORM_BASE}/lol/league/v4/${tierLower}leagues/by-queue/${safeEncode(
@@ -241,20 +353,27 @@ app.get("/api/ranking/:tier", async (req, res) => {
       if (!entry?.puuid) return entry;
 
       try {
-        const account = await fetchAccountByPuuid(entry.puuid);
+        const [account, profile] = await Promise.all([
+          fetchAccountByPuuidCached(entry.puuid),
+          fetchProfileByPuuidCached(entry.puuid),
+        ]);
         return {
           ...entry,
           riotId:
             account?.gameName && account?.tagLine
               ? `${account.gameName}#${account.tagLine}`
               : entry.riotId,
+          profileIconId: profile?.profileIconId,
+          summonerLevel: profile?.summonerLevel,
         };
       } catch {
         return entry;
       }
     });
 
-    res.json({ ...data, entries: enriched, totalEntries, page, limit });
+    const response = { ...data, entries: enriched, totalEntries, page, limit, cached: false };
+    setCache(cache.ranking, cacheKey, response, CACHE_TTL.rankingMs);
+    res.json(response);
   } catch (e) {
     res.status(e.response?.status || 500).json({
       message: "Erreur Riot (ranking)",
@@ -269,16 +388,24 @@ app.listen(PORT, () => {
 });
 
 /**
- * Stats récentes calculées
+ * Stats recentes calculees
  * GET /api/player/recent-stats/:puuid?count=10
  */
 app.get("/api/player/recent-stats/:puuid", async (req, res) => {
   try {
     const { puuid } = req.params;
-    const count = Math.min(Number(req.query.count ?? 10), 20); // sécurité
+    const count = Math.min(Number(req.query.count ?? 10), 20);
     const start = 0;
+    const refresh = String(req.query.refresh ?? "false") === "true";
+    const mode = String(req.query.mode ?? "ranked");
+    const cacheKey = `${puuid}|${count}`;
 
-    // 1) Récupérer les IDs
+    if (!refresh) {
+      const cached = getCache(cache.recentStats, cacheKey);
+      if (cached) return res.json({ ...cached, cached: true });
+    }
+
+    // 1) Recuperer les IDs
     const idsUrl = `${RIOT_REGIONAL_BASE}/lol/match/v5/matches/by-puuid/${safeEncode(
       puuid
     )}/ids?start=${start}&count=${count}`;
@@ -298,13 +425,17 @@ app.get("/api/player/recent-stats/:puuid", async (req, res) => {
       });
     }
 
-    // 2) Récupérer les détails des matchs (en parallèle, mais safe)
+    // 2) Details des matchs
     const matchDetailPromises = matchIds.map((matchId) => {
       const matchUrl = `${RIOT_REGIONAL_BASE}/lol/match/v5/matches/${safeEncode(matchId)}`;
       return riot.get(matchUrl).then((r) => r.data);
     });
 
     const matches = await Promise.all(matchDetailPromises);
+    const rankedQueues = new Set([420, 440]); // SoloQ / Flex SR
+    const rankedMatches = matches.filter((m) => rankedQueues.has(m?.info?.queueId));
+    const matchesToUse =
+      mode === "all" ? matches : rankedMatches.length > 0 ? rankedMatches : [];
 
     // 3) Calculs
     let wins = 0;
@@ -314,9 +445,11 @@ app.get("/api/player/recent-stats/:puuid", async (req, res) => {
     let totalDeaths = 0;
     let totalAssists = 0;
 
-    const champCount = new Map(); // championName -> nb
+    const champCount = new Map();
+    const roleCount = new Map();
+    const recentMatches = [];
 
-    for (const m of matches) {
+    for (const m of matchesToUse) {
       const participants = m?.info?.participants;
       if (!Array.isArray(participants)) continue;
 
@@ -332,6 +465,75 @@ app.get("/api/player/recent-stats/:puuid", async (req, res) => {
 
       const champ = me.championName ?? "Unknown";
       champCount.set(champ, (champCount.get(champ) ?? 0) + 1);
+
+      if (me.summonerId) {
+        setCache(cache.summonerIdByPuuid, puuid, me.summonerId, CACHE_TTL.profileMs);
+      }
+
+      const teamPosition = me.teamPosition ?? "UNKNOWN";
+      const lane = me.lane ?? "UNKNOWN";
+      const role = me.role ?? "UNKNOWN";
+      roleCount.set(teamPosition, (roleCount.get(teamPosition) ?? 0) + 1);
+
+      const roleLabel =
+        teamPosition === "TOP"
+          ? "Top"
+          : teamPosition === "JUNGLE"
+          ? "Jungle"
+          : teamPosition === "MIDDLE"
+          ? "Mid"
+          : teamPosition === "BOTTOM"
+          ? "ADC"
+          : teamPosition === "UTILITY"
+          ? "Support"
+          : lane === "TOP"
+          ? "Top"
+          : lane === "JUNGLE"
+          ? "Jungle"
+          : lane === "MIDDLE"
+          ? "Mid"
+          : lane === "BOTTOM" && role?.includes("SUPPORT")
+          ? "Support"
+          : lane === "BOTTOM"
+          ? "ADC"
+          : "Unknown";
+
+      recentMatches.push({
+        matchId: m?.metadata?.matchId,
+        queueId: m?.info?.queueId,
+        gameCreation: m?.info?.gameCreation,
+        gameDuration: m?.info?.gameDuration,
+        championName: me.championName,
+        championId: me.championId,
+        teamPosition,
+        role,
+        lane,
+        roleLabel,
+        win: me.win,
+        kills: me.kills,
+        deaths: me.deaths,
+        assists: me.assists,
+        totalMinionsKilled: me.totalMinionsKilled,
+        participants: participants.map((p) => ({
+          puuid: p.puuid,
+          summonerName: p.summonerName,
+          riotId:
+            p.riotIdGameName && p.riotIdTagline
+              ? `${p.riotIdGameName}#${p.riotIdTagline}`
+              : p.summonerName,
+          championName: p.championName,
+          teamPosition: p.teamPosition,
+          lane: p.lane,
+          role: p.role,
+          win: p.win,
+          kills: p.kills,
+          deaths: p.deaths,
+          assists: p.assists,
+          totalMinionsKilled: p.totalMinionsKilled,
+          championId: p.championId,
+          teamId: p.teamId,
+        })),
+      });
     }
 
     const played = wins + losses;
@@ -351,7 +553,19 @@ app.get("/api/player/recent-stats/:puuid", async (req, res) => {
       .sort((a, b) => b.games - a.games)
       .slice(0, 5);
 
-    return res.json({
+    const roleMap = {
+      TOP: "Top",
+      JUNGLE: "Jungle",
+      MIDDLE: "Mid",
+      BOTTOM: "ADC",
+      UTILITY: "Support",
+    };
+
+    const primaryRole = Array.from(roleCount.entries())
+      .filter(([role]) => roleMap[role])
+      .sort((a, b) => b[1] - a[1])[0]?.[0];
+
+    const response = {
       puuid,
       count: played,
       winrate,
@@ -359,7 +573,15 @@ app.get("/api/player/recent-stats/:puuid", async (req, res) => {
       losses,
       avgKda,
       topChampions,
-    });
+      primaryRole: primaryRole ? roleMap[primaryRole] : "Unknown",
+      recentMatches,
+      queuesUsed: rankedMatches.length > 0 ? ["RANKED_SOLO_5x5", "RANKED_FLEX_SR"] : [],
+      mode,
+      cached: false,
+    };
+
+    setCache(cache.recentStats, cacheKey, response, CACHE_TTL.recentStatsMs);
+    return res.json(response);
   } catch (e) {
     res.status(e.response?.status || 500).json({
       message: "Erreur Riot (recent-stats)",

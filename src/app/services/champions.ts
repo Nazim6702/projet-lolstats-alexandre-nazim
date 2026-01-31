@@ -33,6 +33,7 @@ interface DDragonChampionListResponse {
 })
 export class ChampionsService {
   private readonly ddragonBase = 'https://ddragon.leagueoflegends.com';
+  private readonly locale = 'fr_FR';
 
   private readonly version$: Observable<string>;
   private readonly champions$: Observable<DDragonChampionSummary[]>;
@@ -50,7 +51,7 @@ export class ChampionsService {
     this.champions$ = this.version$.pipe(
       switchMap((v) =>
         this.http.get<DDragonChampionListResponse>(
-          `${this.ddragonBase}/cdn/${v}/data/en_US/champion.json`
+          `${this.ddragonBase}/cdn/${v}/data/${this.locale}/champion.json`
         )
       ),
       map((resp) => Object.values(resp.data)),
@@ -96,7 +97,9 @@ export class ChampionsService {
     return this.version$.pipe(
       switchMap((v) =>
         this.http.get<DDragonChampionDetailsResponse>(
-          `${this.ddragonBase}/cdn/${v}/data/en_US/champion/${encodeURIComponent(champId)}.json`
+          `${this.ddragonBase}/cdn/${v}/data/${this.locale}/champion/${encodeURIComponent(
+            champId
+          )}.json`
         )
       ),
       map((resp) => resp.data[champId]),
