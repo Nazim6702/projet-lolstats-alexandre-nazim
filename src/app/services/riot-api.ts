@@ -44,6 +44,9 @@ export interface RankingDTO {
   tier: string;
   name: string;
   queue: string;
+  totalEntries?: number;
+  page?: number;
+  limit?: number;
   entries: RankingEntryDTO[];
 }
 
@@ -70,8 +73,15 @@ export class RiotApiService {
     return this.http.get<SummonerProfileDTO>(url);
   }
 
-  getRanking(tier: RankingTier, queue: string = 'RANKED_SOLO_5x5'): Observable<RankingDTO> {
-    const url = `${this.baseUrl}/ranking/${encodeURIComponent(tier)}?queue=${encodeURIComponent(queue)}`;
+  getRanking(
+    tier: RankingTier,
+    queue: string = 'RANKED_SOLO_5x5',
+    page: number = 1,
+    limit: number = 15
+  ): Observable<RankingDTO> {
+    const url = `${this.baseUrl}/ranking/${encodeURIComponent(tier)}?queue=${encodeURIComponent(
+      queue
+    )}&page=${page}&limit=${limit}`;
     return this.http.get<RankingDTO>(url);
   }
 }

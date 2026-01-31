@@ -214,6 +214,7 @@ app.get("/api/ranking/:tier", async (req, res) => {
     const { tier } = req.params;
     const queue = req.query.queue ?? "RANKED_SOLO_5x5";
     const limit = Math.max(1, Math.min(Number(req.query.limit ?? 15), 50));
+    const page = Math.max(1, Number(req.query.page ?? 1));
 
     const tierLower = String(tier).toLowerCase();
     const allowed = ["challenger", "grandmaster", "master"];
@@ -231,7 +232,9 @@ app.get("/api/ranking/:tier", async (req, res) => {
     const r = await riot.get(url);
     const data = r.data ?? {};
     const entries = Array.isArray(data.entries) ? data.entries : [];
-    const limitedEntries = entries.slice(0, limit);
+    const totalEntries = entries.length;
+    const startIndex = (page - 1) * limit;
+    const limitedEntries = entries.slice(startIndex, startIndex + limit);
 
     const enriched = await mapWithConcurrency(limitedEntries, 4, async (entry) => {
       if (entry?.riotId) return entry;
@@ -251,7 +254,7 @@ app.get("/api/ranking/:tier", async (req, res) => {
       }
     });
 
-    res.json({ ...data, entries: enriched });
+    res.json({ ...data, entries: enriched, totalEntries, page, limit });
   } catch (e) {
     res.status(e.response?.status || 500).json({
       message: "Erreur Riot (ranking)",

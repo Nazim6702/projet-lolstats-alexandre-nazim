@@ -23,6 +23,7 @@ export class ClassementComponent {
   protected error = '';
 
   protected readonly queue = 'RANKED_SOLO_5x5';
+  protected readonly pageSize = 15;
 
   protected readonly tiers: readonly { key: RankingTier; label: string }[] = [
     { key: 'challenger', label: 'Challenger' },
@@ -31,6 +32,8 @@ export class ClassementComponent {
   ] as const;
 
   protected tier: RankingTier = 'challenger';
+  protected page = 1;
+  protected totalPages = 1;
 
   protected data: { tier: string; queue: string } | null = null;
   protected entries: RankingEntryVm[] = [];
@@ -45,6 +48,14 @@ export class ClassementComponent {
   protected setTier(tier: RankingTier): void {
     if (tier === this.tier) return;
     this.tier = tier;
+    this.page = 1;
+    this.fetch();
+  }
+
+  protected goToPage(page: number): void {
+    const nextPage = Math.max(1, Math.min(page, this.totalPages));
+    if (nextPage === this.page) return;
+    this.page = nextPage;
     this.fetch();
   }
 
@@ -53,9 +64,10 @@ export class ClassementComponent {
     this.error = '';
     this.entries = [];
     this.data = null;
+    this.totalPages = 1;
 
     this.api
-      .getRanking(this.tier, this.queue)
+      .getRanking(this.tier, this.queue, this.page, this.pageSize)
       .pipe(
         takeUntilDestroyed(this.destroyRef),
         finalize(() => {
@@ -65,6 +77,8 @@ export class ClassementComponent {
       .subscribe({
         next: (res) => {
           this.data = { tier: res.tier, queue: res.queue };
+          const totalEntries = res.totalEntries ?? res.entries.length;
+          this.totalPages = Math.max(1, Math.ceil(totalEntries / this.pageSize));
 
           this.entries = res.entries.map((e) => ({
             ...e,
