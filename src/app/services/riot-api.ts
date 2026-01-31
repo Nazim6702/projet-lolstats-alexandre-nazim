@@ -8,6 +8,17 @@ export interface RiotAccountDTO {
   tagLine: string;
 }
 
+export interface SummonerProfileDTO {
+  id: string;
+  accountId: string;
+  puuid: string;
+  name: string;
+  summonerLevel: number;
+  riotId?: string;
+  gameName?: string;
+  tagLine?: string;
+}
+
 export interface RecentStatsDTO {
   puuid: string;
   count: number;
@@ -20,6 +31,8 @@ export interface RecentStatsDTO {
 
 export interface RankingEntryDTO {
   puuid: string;
+  summonerName?: string;
+  riotId?: string;
   leaguePoints: number;
   wins: number;
   losses: number;
@@ -50,6 +63,11 @@ export class RiotApiService {
   getRecentStats(puuid: string, count: number = 20): Observable<RecentStatsDTO> {
     const url = `${this.baseUrl}/player/recent-stats/${encodeURIComponent(puuid)}?count=${count}`;
     return this.http.get<RecentStatsDTO>(url);
+  }
+
+  getProfile(puuid: string): Observable<SummonerProfileDTO> {
+    const url = `${this.baseUrl}/player/profile/${encodeURIComponent(puuid)}`;
+    return this.http.get<SummonerProfileDTO>(url);
   }
 
   getRanking(tier: RankingTier, queue: string = 'RANKED_SOLO_5x5'): Observable<RankingDTO> {

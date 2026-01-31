@@ -31,8 +31,67 @@ function safeEncode(v) {
   return encodeURIComponent(String(v));
 }
 
+async function mapWithConcurrency(items, limit, mapper) {
+  const results = new Array(items.length);
+  let index = 0;
+  const workers = new Array(Math.min(limit, items.length)).fill(0).map(async () => {
+    while (index < items.length) {
+      const current = index++;
+      results[current] = await mapper(items[current], current);
+    }
+  });
+  await Promise.all(workers);
+  return results;
+}
+
+async function fetchSummonerByPuuid(puuid) {
+  const url = `${RIOT_PLATFORM_BASE}/lol/summoner/v4/summoners/by-puuid/${safeEncode(
+    puuid
+  )}`;
+  const r = await riot.get(url);
+  return r.data;
+}
+
+async function fetchAccountByPuuid(puuid) {
+  const url = `${RIOT_REGIONAL_BASE}/riot/account/v1/accounts/by-puuid/${safeEncode(
+    puuid
+  )}`;
+  const r = await riot.get(url);
+  return r.data;
+}
+
 app.get("/api/health", (req, res) => {
   res.json({ ok: true, service: "lolstats-proxy" });
+});
+
+// Debug: fetch summoner profile by puuid
+app.get("/api/debug/summoner/:puuid", async (req, res) => {
+  try {
+    const { puuid } = req.params;
+    const data = await fetchSummonerByPuuid(puuid);
+    res.json(data);
+  } catch (e) {
+    res.status(e.response?.status || 500).json({
+      message: "Erreur Riot (debug summoner by puuid)",
+      status: e.response?.status,
+      data: e.response?.data,
+    });
+  }
+});
+
+// Debug: fetch account by puuid (Riot ID)
+app.get("/api/debug/account/:puuid", async (req, res) => {
+  try {
+    const { puuid } = req.params;
+    const data = await fetchAccountByPuuid(puuid);
+    res.json(data);
+  } catch (e) {
+    res.status(e.response?.status || 500).json({
+      message: "Erreur Riot (debug account by puuid)",
+      status: e.response?.status,
+      data: e.response?.data,
+    });
+  }
 });
 
 /**
@@ -68,8 +127,27 @@ app.get("/api/player/profile/:puuid", async (req, res) => {
       puuid
     )}`;
 
-    const r = await riot.get(url);
-    res.json(r.data);
+    const [summonerResp, accountResp] = await Promise.allSettled([
+      riot.get(url),
+      fetchAccountByPuuid(puuid),
+    ]);
+
+    const summonerData =
+      summonerResp.status === "fulfilled" ? summonerResp.value.data : {};
+    const accountData =
+      accountResp.status === "fulfilled" ? accountResp.value : {};
+
+    const riotId =
+      accountData?.gameName && accountData?.tagLine
+        ? `${accountData.gameName}#${accountData.tagLine}`
+        : undefined;
+
+    res.json({
+      ...summonerData,
+      riotId,
+      gameName: accountData?.gameName,
+      tagLine: accountData?.tagLine,
+    });
   } catch (e) {
     res.status(e.response?.status || 500).json({
       message: "Erreur Riot (profile)",
@@ -135,6 +213,7 @@ app.get("/api/ranking/:tier", async (req, res) => {
   try {
     const { tier } = req.params;
     const queue = req.query.queue ?? "RANKED_SOLO_5x5";
+    const limit = Math.max(1, Math.min(Number(req.query.limit ?? 15), 50));
 
     const tierLower = String(tier).toLowerCase();
     const allowed = ["challenger", "grandmaster", "master"];
@@ -150,7 +229,29 @@ app.get("/api/ranking/:tier", async (req, res) => {
     )}`;
 
     const r = await riot.get(url);
-    res.json(r.data);
+    const data = r.data ?? {};
+    const entries = Array.isArray(data.entries) ? data.entries : [];
+    const limitedEntries = entries.slice(0, limit);
+
+    const enriched = await mapWithConcurrency(limitedEntries, 4, async (entry) => {
+      if (entry?.riotId) return entry;
+      if (!entry?.puuid) return entry;
+
+      try {
+        const account = await fetchAccountByPuuid(entry.puuid);
+        return {
+          ...entry,
+          riotId:
+            account?.gameName && account?.tagLine
+              ? `${account.gameName}#${account.tagLine}`
+              : entry.riotId,
+        };
+      } catch {
+        return entry;
+      }
+    });
+
+    res.json({ ...data, entries: enriched });
   } catch (e) {
     res.status(e.response?.status || 500).json({
       message: "Erreur Riot (ranking)",

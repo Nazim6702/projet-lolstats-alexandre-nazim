@@ -57,7 +57,7 @@
 
               <td class="d-flex align-items-center justify-content-between gap-2">
                 <span class="text-muted small">
-                  {{ e.puuid | slice:0:10 }}…
+                  {{ e.riotId ?? e.summonerName ?? (e.puuid | slice:0:10) + '…' }}
                   @if (e.rank) { <span class="ms-1">({{ e.rank }})</span> }
                 </span>
 
@@ -77,3 +77,5 @@
     </div>
   }
 }
+
+
