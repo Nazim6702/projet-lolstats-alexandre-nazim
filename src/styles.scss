@@ -18,6 +18,7 @@
   --radius-sm: 10px;
   --font-display: 'Syne', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --ring: 0 0 0 3px rgba(248, 214, 109, 0.18);
 }
 
 * {
@@ -45,6 +46,15 @@ body::before {
   opacity: 0.4;
   pointer-events: none;
   z-index: -1;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  letter-spacing: -0.3px;
+}
+
+*::selection {
+  background: rgba(248, 214, 109, 0.28);
+  color: #0b0b10;
 }
 
 img {

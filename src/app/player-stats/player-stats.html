@@ -13,7 +13,12 @@
   <button class="mode-btn" type="button" [disabled]="loading" (click)="toggleMode()">
     {{ mode === 'ranked' ? 'Compétitif uniquement' : 'Tous modes' }}
   </button>
-  <div class="status-badge" [class.live]="!cached" [class.cache]="cached">
+  <div
+    class="status-badge"
+    [class.live]="!cached"
+    [class.cache]="cached"
+    [title]="cached ? 'Données en cache (TTL ~3 min)' : 'Données live'"
+  >
     {{ cached ? 'Cache' : 'Live' }}
   </div>
 </div>
@@ -45,25 +50,33 @@
       <div class="glass panel">
         <h5 class="panel-title">Resume ({{ stats.count }} derniers matchs)</h5>
 
-        <div class="winrate-row">
+        <div class="winrate-stack">
           <div class="winrate-chart" [style.background]="winrateGradient">
             <span>{{ winratePercent }}%</span>
           </div>
-          <div>
-            <p class="mb-1">
-              <strong>Winrate :</strong> {{ winratePercent }}%
-              ({{ stats.wins }}W / {{ stats.losses }}L)
-            </p>
-            @if (stats.avgKda) {
-              <p class="mb-0">
-                <strong>KDA moyen :</strong>
-                {{ stats.avgKda.kills | number:'1.1-1' }} /
-                {{ stats.avgKda.deaths | number:'1.1-1' }} /
-                {{ stats.avgKda.assists | number:'1.1-1' }}
-              </p>
-            }
-          </div>
+          <p class="mb-0">
+            <strong>Winrate :</strong> {{ winratePercent }}%
+            ({{ stats.wins }}W / {{ stats.losses }}L)
+          </p>
         </div>
+        @if (stats.avgKda) {
+          <div class="kda-card">
+            <div class="kda-label">KDA moyen</div>
+            <div class="kda-values">
+              <span class="kda-pill k">{{ stats.avgKda.kills | number:'1.1-1' }}</span>
+              <span class="kda-sep">/</span>
+              <span class="kda-pill d">{{ stats.avgKda.deaths | number:'1.1-1' }}</span>
+              <span class="kda-sep">/</span>
+              <span class="kda-pill a">{{ stats.avgKda.assists | number:'1.1-1' }}</span>
+            </div>
+            <div class="kda-sub text-muted">par match</div>
+            <div class="kda-legend">
+              <span class="kda-key k">K</span>
+              <span class="kda-key d">D</span>
+              <span class="kda-key a">A</span>
+            </div>
+          </div>
+        }
 
       </div>
 
@@ -93,7 +106,7 @@
     <div class="grid mt-3">
       <div class="glass panel">
         <h5 class="panel-title">Role principal (estime)</h5>
-        <div class="role-pill">{{ stats.primaryRole ?? 'Unknown' }}</div>
+        <div class="role-pill role-accent">{{ stats.primaryRole ?? 'Unknown' }}</div>
         <p class="text-muted small mb-0">
           Estime a partir des 10 derniers matchs.
         </p>
@@ -117,8 +130,8 @@
                     <div class="summary-title">{{ m.championName }}</div>
                     <div class="text-muted small">
                       {{ getRoleLabel(m) }} · {{ m.kills }}/{{ m.deaths }}/{{ m.assists }}
-                      · {{ (m.gameDuration ?? 0) / 60 | number:'1.0-0' }} min
-                      @if (formatMatchDate(m)) { · {{ formatMatchDate(m) }} }
+                      · <span class="meta-strong">{{ (m.gameDuration ?? 0) / 60 | number:'1.0-0' }} min</span>
+                      @if (formatMatchDate(m)) { · <span class="meta-strong">{{ formatMatchDate(m) }}</span> }
                     </div>
                   </div>
                 </div>

@@ -93,19 +93,3 @@ export interface RankingDTO {
 }
 
 export type RankingTier = 'challenger' | 'grandmaster' | 'master';
-
-export interface LeagueEntryDTO {
-  leagueId: string;
-  queueType: string;
-  tier: string;
-  rank: string;
-  leaguePoints: number;
-  wins: number;
-  losses: number;
-}
-
-export interface RankResponseDTO {
-  entries: LeagueEntryDTO[];
-  cached?: boolean;
-  error?: string;
-}

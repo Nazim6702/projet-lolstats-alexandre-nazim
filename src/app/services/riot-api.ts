@@ -7,7 +7,6 @@ import {
   RecentStatsDTO,
   RankingDTO,
   RankingTier,
-  RankResponseDTO,
 } from '../models/riot';
 
 @Injectable({ providedIn: 'root' })
@@ -53,8 +52,4 @@ export class RiotApiService {
     return this.http.get<RankingDTO>(url);
   }
 
-  getRank(puuid: string, refresh: boolean = false): Observable<RankResponseDTO> {
-    const url = `${this.baseUrl}/player/rank/${encodeURIComponent(puuid)}?refresh=${refresh}`;
-    return this.http.get<RankResponseDTO>(url);
-  }
 }

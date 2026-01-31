@@ -32,6 +32,10 @@
   border: 1px solid var(--stroke);
 }
 
+.splash {
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.45);
+}
+
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));

@@ -99,8 +99,7 @@
                     [alt]="e.riotId ?? 'Joueur'"
                   />
                   <span class="text-muted small">
-                    {{ e.riotId ?? e.summonerName ?? (e.puuid | slice:0:10) + '…' }}
-                    @if (e.rank) { <span class="ms-1">({{ e.rank }})</span> }
+                  {{ e.riotId ?? e.summonerName ?? (e.puuid | slice:0:10) + '…' }}
                   </span>
                 </span>
 

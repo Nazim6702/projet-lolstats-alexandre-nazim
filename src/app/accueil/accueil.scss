@@ -9,6 +9,8 @@
   padding: 2.5rem;
   border-radius: var(--radius-lg);
   animation: floatIn 500ms ease both;
+  position: relative;
+  overflow: hidden;
 }
 
 .hero-text {
@@ -57,8 +59,8 @@
 }
 
 .field-input:focus {
-  border-color: rgba(255, 178, 0, 0.6);
-  box-shadow: 0 0 0 3px rgba(255, 178, 0, 0.15);
+  border-color: rgba(248, 214, 109, 0.6);
+  box-shadow: var(--ring);
 }
 
 .cta-btn {

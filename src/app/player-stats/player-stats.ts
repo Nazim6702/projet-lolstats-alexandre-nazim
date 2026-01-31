@@ -7,6 +7,14 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import { RiotApiService } from '../services/riot-api';
 import { RecentStatsDTO } from '../models/riot';
+import {
+  formatMatchDate,
+  getQueueLabel,
+  getRoleLabel,
+  getWinrateGradient,
+  getWinratePercent,
+  normalizeRole,
+} from '../mappers/player-stats.mapper';
 import { ChampionsService } from '../services/champions';
 
 type RecentMatch = NonNullable<RecentStatsDTO['recentMatches']>[number];
@@ -70,12 +78,11 @@ export class PlayerStatsComponent {
 
   protected get winratePercent(): number {
     if (!this.stats) return 0;
-    return Math.round(this.stats.winrate * 100);
+    return getWinratePercent(this.stats.winrate);
   }
 
   protected get winrateGradient(): string {
-    const win = this.winratePercent;
-    return `conic-gradient(var(--accent-0) 0deg ${win * 3.6}deg, rgba(255,255,255,0.08) ${win * 3.6}deg 360deg)`;
+    return getWinrateGradient(this.winratePercent);
   }
 
 
@@ -84,44 +91,19 @@ export class PlayerStatsComponent {
   }
 
   protected getQueueLabel(match: RecentMatch | undefined): string {
-    const queueId = match?.queueId;
-    if (queueId === 420) return 'SoloQ';
-    if (queueId === 440) return 'Flex';
-    if (queueId === 450) return 'ARAM';
-    if (match?.gameMode) return match.gameMode;
-    if (match?.gameType) return match.gameType;
-    return 'Unknown';
+    return getQueueLabel(match?.queueId, match?.gameMode, match?.gameType);
   }
 
   protected getRoleLabel(match: RecentMatch | undefined): string {
-    if (!match) return 'Unknown';
-    const roleLabel = match.roleLabel;
-    if (roleLabel && roleLabel !== 'Unknown') return roleLabel;
-    return this.normalizeRole(match.teamPosition, match.lane, match.role);
+    return getRoleLabel(match?.roleLabel, match?.teamPosition, match?.lane, match?.role);
   }
 
   protected getParticipantRole(p: MatchParticipant | undefined): string {
-    if (!p) return 'Unknown';
-    return this.normalizeRole(p.teamPosition, p.lane, p.role);
+    return normalizeRole(p?.teamPosition, p?.lane, p?.role);
   }
 
   protected formatMatchDate(match: RecentMatch | undefined): string {
-    const ts = match?.gameCreation;
-    if (!ts) return '';
-    return new Intl.DateTimeFormat('fr-FR', {
-      dateStyle: 'medium',
-      timeStyle: 'short',
-    }).format(new Date(ts));
-  }
-
-  private normalizeRole(teamPosition?: string, lane?: string, role?: string): string {
-    if (teamPosition === 'TOP' || lane === 'TOP') return 'Top';
-    if (teamPosition === 'JUNGLE' || lane === 'JUNGLE') return 'Jungle';
-    if (teamPosition === 'MIDDLE' || lane === 'MIDDLE') return 'Mid';
-    if (teamPosition === 'BOTTOM') return role?.includes('SUPPORT') ? 'Support' : 'ADC';
-    if (teamPosition === 'UTILITY') return 'Support';
-    if (lane === 'BOTTOM') return role?.includes('SUPPORT') ? 'Support' : 'ADC';
-    return 'Unknown';
+    return formatMatchDate(match?.gameCreation);
   }
 
   private fetchStats$(puuid: string, refresh: boolean) {
