@@ -1,59 +1,58 @@
-# ProjetLolstatsAlexandreNazim
+# LoLStats — Projet Alexandre & Nazim
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.3.7.
+Application Angular + backend qui consomme l’API Riot Games.
 
-## Development server
+## Prérequis
 
-To start a local development server, run:
+- Node.js + npm
+- Clé d’API **Riot Games (Dev)** valide
+- `npm install` dans **/backend** et à la racine du projet
 
+## Installation
+
+Dans deux terminaux séparés :
+
+1) Backend
 ```bash
+cd backend
+npm install
+npm run dev
+```
+
+2) Frontend
+```bash
+npm install
 ng serve
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
-
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
-```bash
-ng generate component component-name
+Ouvrir ensuite :
+```
+http://localhost:4200
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+## Configuration (.env)
 
-```bash
-ng generate --help
+Vérifie le fichier `backend/.env`.  
+Il doit contenir au minimum :
+
+```
+PORT=3000
+RIOT_API_KEY=VOTRE_CLE
+RIOT_REGIONAL_BASE=https://europe.api.riotgames.com
+RIOT_PLATFORM_BASE=https://euw1.api.riotgames.com
 ```
 
-## Building
+## Obtenir une clé Riot Games (Dev)
 
-To build the project run:
+1) Crée un compte développeur Riot Games.
+2) Génère une **clé d’API Dev**.
 
-```bash
-ng build
+Lien officiel :
+```
+https://developer.riotgames.com/
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+## Notes
 
-## Running unit tests
-
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+- La clé **Dev** expire tous les 24 heures : pensez à la renouveler.
+- En cas d’erreur “Rate limit”, attendez quelques secondes ou relancez.
