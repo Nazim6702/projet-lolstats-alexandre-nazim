@@ -5,13 +5,25 @@
     <p class="section-subtitle">Riot ID et resume rapide des matchs recents.</p>
   </div>
   <div class="player-badge">
-    <code class="riot-id">{{ riotId || playerName || puuid }}</code>
+    @if (version && profileIconId != null) {
+      <img
+        class="profile-icon"
+        [src]="'https://ddragon.leagueoflegends.com/cdn/' + version + '/img/profileicon/' + profileIconId + '.png'"
+        alt="Profile icon"
+      />
+    }
+    <div class="player-meta">
+      <code class="riot-id">{{ riotId || playerName || puuid }}</code>
+      @if (summonerLevel != null) {
+        <div class="level-pill">Niveau {{ summonerLevel }}</div>
+      }
+    </div>
   </div>
   <button class="refresh-btn" type="button" [disabled]="loading" (click)="fetchStats(true)">
     Actualiser
   </button>
   <button class="mode-btn" type="button" [disabled]="loading" (click)="toggleMode()">
-    {{ mode === 'ranked' ? 'Compétitif uniquement' : 'Tous modes' }}
+    {{ mode === 'ranked' ? 'Tous modes' : 'Compétitif uniquement' }}
   </button>
   <div
     class="status-badge"
@@ -44,7 +56,16 @@
 
 @if (!loading && !error && stats) {
   @if (stats.count === 0) {
-    <div class="alert alert-warning">Aucun match récent trouvé pour ce joueur.</div>
+    <div class="alert alert-warning">
+      Aucune game n&rsquo;a &eacute;t&eacute; trouv&eacute;e durant ses 10 derniers matchs.
+      @if (mode === 'ranked') {
+        <div class="mt-2">
+          <button class="btn btn-sm btn-outline-light" type="button" (click)="toggleMode()">
+            Voir tous les modes
+          </button>
+        </div>
+      }
+    </div>
   } @else {
     <div class="grid">
       <div class="glass panel">
@@ -106,18 +127,55 @@
     <div class="grid mt-3">
       <div class="glass panel">
         <h5 class="panel-title">Role principal (estime)</h5>
-        <div class="role-pill role-accent">{{ stats.primaryRole ?? 'Unknown' }}</div>
+        <div class="role-pill role-accent">
+          @if (getLaneIcon(stats.primaryRole)) {
+            <img
+              class="lane-icon"
+              [src]="getLaneIcon(stats.primaryRole)!"
+              alt="lane icon"
+            />
+          }
+          <span>{{ stats.primaryRole ?? 'Unknown' }}</span>
+        </div>
         <p class="text-muted small mb-0">
           Estime a partir des 10 derniers matchs.
         </p>
       </div>
+      <div class="glass panel">
+        <h5 class="panel-title">Rang</h5>
+        @if (rankEntries.length === 0) {
+          <p class="text-muted mb-0">Non class&eacute; Solo/Duo / Flex.</p>
+        } @else {
+          <div class="rank-list">
+            @for (r of rankEntries; track r.queueType) {
+              <div class="rank-row">
+                @if (r.tier) {
+                  <img
+                    class="rank-icon"
+                    [src]="'/assets/ranks/' + r.tier.toLowerCase() + '.png'"
+                    [alt]="r.tier"
+                  />
+                }
+                <div class="rank-info">
+                  <div class="rank-queue">
+                    {{ r.queueType === 'RANKED_SOLO_5x5' ? 'Solo/Duo' : r.queueType === 'RANKED_FLEX_SR' ? 'Flex' : r.queueType }}
+                  </div>
+                  <div class="rank-tier">
+                    {{ r.tier ?? 'Unranked' }} {{ r.rank ?? '' }} &mdash; {{ r.leaguePoints ?? 0 }} LP {{ r.wins ?? 0 }}W/{{ r.losses ?? 0 }}L
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
     </div>
 
-    @if (stats.recentMatches?.length) {
+    @if (matchList.length) {
       <div class="glass panel mt-3">
         <h5 class="panel-title">Details des matchs</h5>
         <div class="match-list">
-          @for (m of stats.recentMatches; track m.matchId) {
+          @for (m of matchList; track m.matchId) {
             <details class="match-card">
               <summary>
                 <div class="summary-left">
@@ -162,7 +220,16 @@
                             <tr>
                               <td>
                                 <div class="small">{{ p.riotId || p.summonerName }}</div>
-                                <div class="text-muted small">{{ getParticipantRole(p) }}</div>
+                                <div class="text-muted small role-inline">
+                                  @if (getLaneIcon(getParticipantRole(p))) {
+                                    <img
+                                      class="lane-icon-sm"
+                                      [src]="getLaneIcon(getParticipantRole(p))!"
+                                      alt="lane icon"
+                                    />
+                                  }
+                                  <span>{{ getParticipantRole(p) }}</span>
+                                </div>
                               </td>
                               <td class="d-flex align-items-center gap-2">
                                 <img
@@ -198,7 +265,16 @@
                             <tr>
                               <td>
                                 <div class="small">{{ p.riotId || p.summonerName }}</div>
-                                <div class="text-muted small">{{ getParticipantRole(p) }}</div>
+                                <div class="text-muted small role-inline">
+                                  @if (getLaneIcon(getParticipantRole(p))) {
+                                    <img
+                                      class="lane-icon-sm"
+                                      [src]="getLaneIcon(getParticipantRole(p))!"
+                                      alt="lane icon"
+                                    />
+                                  }
+                                  <span>{{ getParticipantRole(p) }}</span>
+                                </div>
                               </td>
                               <td class="d-flex align-items-center gap-2">
                                 <img
@@ -220,6 +296,16 @@
               }
             </details>
           }
+        </div>
+        <div class="mt-3">
+          <button
+            class="btn btn-outline-light"
+            type="button"
+            [disabled]="loadingMore || !canLoadMore"
+            (click)="loadMore()"
+          >
+            {{ loadingMore ? 'Chargement...' : canLoadMore ? 'Charger plus' : 'Plus de matchs' }}
+          </button>
         </div>
       </div>
     }

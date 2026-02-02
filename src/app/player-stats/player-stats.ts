@@ -6,7 +6,7 @@ import { forkJoin, of } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import { RiotApiService } from '../services/riot-api';
-import { RecentStatsDTO } from '../models/riot';
+import { PlayerRankEntryDTO, RecentStatsDTO } from '../models/riot';
 import {
   formatMatchDate,
   getQueueLabel,
@@ -31,12 +31,21 @@ export class PlayerStatsComponent {
   protected puuid = '';
   protected playerName = '';
   protected riotId = '';
+  protected summonerLevel: number | null = null;
+  protected profileIconId: number | null = null;
   protected version = '';
   protected loading = false;
   protected error = '';
   protected stats: RecentStatsDTO | null = null;
+  protected rankEntries: PlayerRankEntryDTO[] = [];
+  protected rankCached = false;
   protected cached = false;
-  protected mode: 'ranked' | 'all' = 'ranked';
+  protected mode: 'ranked' | 'all' = 'all';
+  protected readonly pageSize = 10;
+  protected page = 0;
+  protected loadingMore = false;
+  protected matchList: RecentMatch[] = [];
+  protected canLoadMore = false;
 
   private readonly route = inject(ActivatedRoute);
   private readonly api = inject(RiotApiService);
@@ -106,33 +115,102 @@ export class PlayerStatsComponent {
     return formatMatchDate(match?.gameCreation);
   }
 
+  protected getLaneIcon(roleLabel: string | undefined | null): string | null {
+    if (!roleLabel) return null;
+    const role = roleLabel.toLowerCase();
+    if (role.includes('top')) return '/assets/lane/top.png';
+    if (role.includes('jungle')) return '/assets/lane/jungler.png';
+    if (role.includes('mid')) return '/assets/lane/mid.png';
+    if (role.includes('adc')) return '/assets/lane/adc.png';
+    if (role.includes('support')) return '/assets/lane/support.png';
+    return null;
+  }
+
   private fetchStats$(puuid: string, refresh: boolean) {
     this.error = '';
     this.stats = null;
     this.playerName = '';
     this.riotId = '';
+    this.summonerLevel = null;
+    this.profileIconId = null;
+    this.rankEntries = [];
+    this.rankCached = false;
     this.cached = false;
+    this.page = 0;
+    this.matchList = [];
+    this.canLoadMore = false;
     this.loading = true;
 
-    return this.api.getRecentStats(puuid, 10, refresh, this.mode).pipe(
+    return this.api.getRecentStats(puuid, this.pageSize, refresh, this.mode, 0).pipe(
       switchMap((stats) =>
         forkJoin({
           stats: of(stats),
           profile: this.api.getProfile(puuid, refresh).pipe(catchError(() => of(null))),
+          rank: this.api.getPlayerRank(puuid, refresh).pipe(catchError(() => of(null))),
           version: this.championsService.getVersion().pipe(catchError(() => of(''))),
         })
       ),
-      map(({ stats, profile, version }) => {
+      map(({ stats, profile, rank, version }) => {
         this.stats = stats;
         this.playerName = profile?.name ?? '';
         this.riotId = profile?.riotId ?? '';
+        this.summonerLevel = profile?.summonerLevel ?? null;
+        this.profileIconId = profile?.profileIconId ?? null;
+        this.rankEntries = rank?.entries ?? [];
+        this.rankCached = Boolean(rank?.cached);
         this.version = version ?? '';
         this.cached = Boolean(stats?.cached);
+        this.matchList = stats?.recentMatches ?? [];
+        this.canLoadMore = (stats?.recentMatches?.length ?? 0) >= this.pageSize;
         return stats;
+      }),
+      catchError((err) => {
+        const status = err?.status;
+        if (status === 429) {
+          this.error = 'Rate limit Riot (trop de requ\u00eates). R\u00e9essaie dans quelques secondes.';
+        } else if (status === 404) {
+          this.error = 'Joueur introuvable.';
+        } else {
+          this.error = 'Erreur serveur. V\u00e9rifie que le backend est lanc\u00e9 sur http://localhost:3000.';
+        }
+        this.stats = null;
+        this.matchList = [];
+        this.canLoadMore = false;
+        return of(null);
       }),
       finalize(() => {
         this.loading = false;
       }),
     );
+  }
+
+  protected loadMore(): void {
+    if (this.loadingMore || !this.puuid || !this.canLoadMore) return;
+    this.loadingMore = true;
+    const nextPage = this.page + 1;
+    const start = nextPage * this.pageSize;
+
+    this.api
+      .getRecentStats(this.puuid, this.pageSize, false, this.mode, start)
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        finalize(() => {
+          this.loadingMore = false;
+        }),
+      )
+      .subscribe({
+        next: (res) => {
+          const nextMatches = res?.recentMatches ?? [];
+          const existing = new Set(this.matchList.map((m) => m.matchId));
+          for (const m of nextMatches) {
+            if (!existing.has(m.matchId)) this.matchList.push(m);
+          }
+          this.page = nextPage;
+          this.canLoadMore = nextMatches.length >= this.pageSize;
+        },
+        error: () => {
+          this.canLoadMore = false;
+        },
+      });
   }
 }

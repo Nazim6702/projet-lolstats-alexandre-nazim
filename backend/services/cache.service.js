@@ -3,6 +3,7 @@ export const cache = {
   recentStats: new Map(),
   accountByPuuid: new Map(),
   profileByPuuid: new Map(),
+  rankByPuuid: new Map(),
 };
 
 export const CACHE_TTL = {
@@ -10,6 +11,7 @@ export const CACHE_TTL = {
   recentStatsMs: 3 * 60 * 1000,
   accountMs: 10 * 60 * 1000,
   profileMs: 5 * 60 * 1000,
+  rankMs: 3 * 60 * 1000,
 };
 
 export function getCache(map, key) {

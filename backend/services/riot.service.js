@@ -56,3 +56,19 @@ export async function getRankingByTierQueue(tierLower, queue) {
   const r = await riot.get(url);
   return r.data;
 }
+
+export async function getLeagueEntriesBySummonerId(summonerId) {
+  const url = `${RIOT_PLATFORM_BASE}/lol/league/v4/entries/by-summoner/${safeEncode(
+    summonerId
+  )}`;
+  const r = await riot.get(url);
+  return r.data;
+}
+
+export async function getLeagueEntriesByPuuid(puuid) {
+  const url = `${RIOT_PLATFORM_BASE}/lol/league/v4/entries/by-puuid/${safeEncode(
+    puuid
+  )}`;
+  const r = await riot.get(url);
+  return r.data;
+}

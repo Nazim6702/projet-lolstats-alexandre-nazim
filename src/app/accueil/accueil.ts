@@ -58,7 +58,7 @@ export class AccueilComponent {
           }
 
           if (status === 429) {
-            this.error = 'Rate limit Riot (trop de requêtes). Réessaie dans quelques secondes.';
+            this.error = 'Rate limit Riot (trop de requ\u00eates). R\u00e9essaie dans quelques secondes.';
             return;
           }
 

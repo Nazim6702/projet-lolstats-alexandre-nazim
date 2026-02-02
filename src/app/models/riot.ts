@@ -9,6 +9,8 @@ export interface SummonerProfileDTO {
   accountId: string;
   puuid: string;
   name: string;
+  profileIconId?: number;
+  revisionDate?: number;
   summonerLevel: number;
   riotId?: string;
   gameName?: string;
@@ -93,3 +95,17 @@ export interface RankingDTO {
 }
 
 export type RankingTier = 'challenger' | 'grandmaster' | 'master';
+
+export interface PlayerRankEntryDTO {
+  queueType?: string;
+  tier?: string;
+  rank?: string;
+  leaguePoints?: number;
+  wins?: number;
+  losses?: number;
+}
+
+export interface PlayerRankDTO {
+  entries: PlayerRankEntryDTO[];
+  cached?: boolean;
+}

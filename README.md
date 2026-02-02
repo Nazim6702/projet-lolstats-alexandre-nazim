@@ -56,3 +56,31 @@ https://developer.riotgames.com/
 
 - La clé **Dev** expire tous les 24 heures : pensez à la renouveler.
 - En cas d’erreur “Rate limit”, attendez quelques secondes ou relancez.
+
+## Design
+
+Aucun template pré-fabriqué n’a été utilisé.  
+Le design repose sur Bootstrap et du SCSS.
+
+## Fonctionnalités (avec endpoints)
+
+1) Recherche d’un joueur par Riot ID  
+   Endpoint: `GET /api/player/by-riot-id/:gameName/:tagLine`
+
+2) Consultation des stats récentes d’un joueur  
+   Endpoints:  
+   - `GET /api/player/recent-stats/:puuid`  
+   - `GET /api/player/profile/:puuid`
+
+3) Consultation du classement (tier + pagination)  
+   Endpoint: `GET /api/ranking/:tier?queue=...&page=...&limit=...`
+
+4) Liste des champions (Data Dragon)  
+   Endpoints:  
+   - `GET https://ddragon.leagueoflegends.com/api/versions.json`  
+   - `GET https://ddragon.leagueoflegends.com/cdn/{version}/data/fr_FR/champion.json`
+
+5) Détails d’un champion (Data Dragon)  
+   Endpoints:  
+   - `GET https://ddragon.leagueoflegends.com/api/versions.json`  
+   - `GET https://ddragon.leagueoflegends.com/cdn/{version}/data/fr_FR/champion/{id}.json`

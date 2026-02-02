@@ -2,9 +2,10 @@
   position: sticky;
   top: 0;
   z-index: 20;
-  padding: 1.2rem 0;
-  background: linear-gradient(180deg, rgba(11, 11, 16, 0.95), rgba(11, 11, 16, 0.6));
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 1.1rem 0;
+  background:
+    linear-gradient(180deg, rgba(10, 15, 24, 0.92), rgba(10, 15, 24, 0.7));
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(16px);
 }
 
@@ -21,10 +22,10 @@
   height: 38px;
   border-radius: 12px;
   background:
-    radial-gradient(circle at 30% 30%, rgba(248, 214, 109, 0.9), transparent 60%),
-    linear-gradient(135deg, #1b2031, #0b0b10);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.5);
+    radial-gradient(circle at 30% 30%, rgba(245, 196, 84, 0.95), transparent 60%),
+    linear-gradient(135deg, #202a3c, #0a0f18);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.45);
   display: grid;
   place-items: center;
 }
@@ -47,6 +48,10 @@
   display: inline-flex;
   gap: 0.75rem;
   flex-wrap: wrap;
+  padding: 0.2rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
 }
 
 .nav-link {
@@ -56,7 +61,7 @@
   color: var(--text-1);
   text-decoration: none;
   transition: all 160ms ease;
-  background: rgba(255, 255, 255, 0.03);
+  background: transparent;
 }
 
 .nav-link:hover {
@@ -66,15 +71,52 @@
 }
 
 .nav-link.active {
-  color: #10131a;
+  color: #0f141b;
   background: linear-gradient(120deg, var(--accent-0), var(--accent-1));
   border-color: transparent;
   font-weight: 600;
 }
 
 .app-main {
-  padding: 2rem 0 3.5rem;
+  padding: 2.2rem 0 3.5rem;
   min-height: calc(100vh - 90px);
+}
+
+.about-fab {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  text-decoration: none;
+  font-weight: 700;
+  color: rgba(244, 246, 251, 0.9);
+  background: rgba(16, 24, 38, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(12px);
+  opacity: 0.65;
+  transition: opacity 140ms ease, transform 140ms ease, border-color 140ms ease;
+  z-index: 30;
+}
+
+.about-fab:hover {
+  opacity: 1;
+  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+@media (max-width: 640px) {
+  .about-fab {
+    right: 14px;
+    bottom: 14px;
+    width: 36px;
+    height: 36px;
+    font-size: 0.9rem;
+  }
 }
 
 @media (max-width: 640px) {

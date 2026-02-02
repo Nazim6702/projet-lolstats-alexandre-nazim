@@ -98,8 +98,13 @@ export class ClassementComponent {
             winrate: Math.round((e.wins / (e.wins + e.losses)) * 100),
           }));
         },
-        error: () => {
-          this.error = 'Impossible de charger le classement.';
+        error: (err) => {
+          const status = err?.status;
+          if (status === 429) {
+            this.error = 'Rate limit Riot (trop de requ\u00eates). R\u00e9essaie dans quelques secondes.';
+          } else {
+            this.error = 'Impossible de charger le classement.';
+          }
         },
       });
   }

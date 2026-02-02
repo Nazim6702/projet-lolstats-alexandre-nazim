@@ -2,6 +2,8 @@ import { Router } from "express";
 import {
   getAccountByPuuid,
   getAccountByRiotId,
+  getLeagueEntriesBySummonerId,
+  getLeagueEntriesByPuuid,
   getMatchDetail,
   getRecentMatchIds,
   getSummonerByPuuid,
@@ -73,10 +75,10 @@ router.get("/recent-stats/:puuid", async (req, res) => {
   try {
     const { puuid } = req.params;
     const count = Math.min(Number(req.query.count ?? 10), 20);
-    const start = 0;
+    const start = Math.max(0, Number(req.query.start ?? 0));
     const refresh = String(req.query.refresh ?? "false") === "true";
     const mode = String(req.query.mode ?? "ranked");
-    const cacheKey = `${puuid}|${count}|${mode}`;
+    const cacheKey = `${puuid}|${count}|${start}|${mode}`;
 
     if (!refresh) {
       const cached = getCache(cache.recentStats, cacheKey);
@@ -246,6 +248,57 @@ router.get("/recent-stats/:puuid", async (req, res) => {
   } catch (e) {
     res.status(e.response?.status || 500).json({
       message: "Erreur Riot (recent-stats)",
+      status: e.response?.status,
+      data: e.response?.data,
+    });
+  }
+});
+
+router.get("/rank/:puuid", async (req, res) => {
+  try {
+    const { puuid } = req.params;
+    const refresh = String(req.query.refresh ?? "false") === "true";
+    const debug = String(req.query.debug ?? "false") === "true";
+
+    if (!refresh) {
+      const cached = getCache(cache.rankByPuuid, puuid);
+      if (cached) return res.json({ ...cached, cached: true });
+    }
+
+    const summoner = await getSummonerByPuuid(puuid);
+    let entries = [];
+    let method = "by-puuid";
+
+    try {
+      entries = await getLeagueEntriesByPuuid(puuid);
+    } catch (err) {
+      method = "by-summoner";
+      if (summoner?.id) {
+        entries = await getLeagueEntriesBySummonerId(summoner.id);
+      }
+    }
+
+    const response = {
+      entries: Array.isArray(entries) ? entries : [],
+      cached: false,
+      ...(debug
+        ? {
+            debug: {
+              platformBase: process.env.RIOT_PLATFORM_BASE,
+              summonerId: summoner?.id,
+              summonerName: summoner?.name,
+              method,
+              entriesCount: Array.isArray(entries) ? entries.length : 0,
+            },
+          }
+        : {}),
+    };
+
+    setCache(cache.rankByPuuid, puuid, response, CACHE_TTL.rankMs);
+    res.json(response);
+  } catch (e) {
+    res.status(e.response?.status || 500).json({
+      message: "Erreur Riot (rank)",
       status: e.response?.status,
       data: e.response?.data,
     });

@@ -7,6 +7,7 @@ import {
   RecentStatsDTO,
   RankingDTO,
   RankingTier,
+  PlayerRankDTO,
 } from '../models/riot';
 
 @Injectable({ providedIn: 'root' })
@@ -24,11 +25,12 @@ export class RiotApiService {
     puuid: string,
     count: number = 20,
     refresh: boolean = false,
-    mode: 'ranked' | 'all' = 'ranked'
+    mode: 'ranked' | 'all' = 'ranked',
+    start: number = 0
   ): Observable<RecentStatsDTO> {
     const url = `${this.baseUrl}/player/recent-stats/${encodeURIComponent(
       puuid
-    )}?count=${count}&refresh=${refresh}&mode=${mode}`;
+    )}?count=${count}&refresh=${refresh}&mode=${mode}&start=${start}`;
     return this.http.get<RecentStatsDTO>(url);
   }
 
@@ -50,6 +52,11 @@ export class RiotApiService {
       queue
     )}&page=${page}&limit=${limit}&refresh=${refresh}`;
     return this.http.get<RankingDTO>(url);
+  }
+
+  getPlayerRank(puuid: string, refresh: boolean = false): Observable<PlayerRankDTO> {
+    const url = `${this.baseUrl}/player/rank/${encodeURIComponent(puuid)}?refresh=${refresh}`;
+    return this.http.get<PlayerRankDTO>(url);
   }
 
 }

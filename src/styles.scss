@@ -1,24 +1,24 @@
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap');
 
 :root {
-  --bg-0: #0b0b10;
-  --bg-1: #11131c;
-  --bg-2: #191d2b;
-  --text-0: #f1f2f6;
-  --text-1: #b4bccd;
-  --accent-0: #f8d66d;
-  --accent-1: #ff7a59;
-  --accent-2: #6be6d6;
-  --accent-3: #9b6bff;
-  --card: rgba(20, 24, 36, 0.7);
-  --stroke: rgba(255, 255, 255, 0.1);
-  --shadow: 0 24px 60px rgba(7, 8, 12, 0.5);
-  --radius-lg: 20px;
+  --bg-0: #0a0f18;
+  --bg-1: #101826;
+  --bg-2: #172238;
+  --text-0: #f4f6fb;
+  --text-1: #aeb8cc;
+  --accent-0: #f5c454;
+  --accent-1: #ff8a4c;
+  --accent-2: #39d0c8;
+  --accent-3: #7ad97a;
+  --card: rgba(16, 24, 38, 0.78);
+  --stroke: rgba(255, 255, 255, 0.08);
+  --shadow: 0 26px 60px rgba(4, 6, 12, 0.6);
+  --radius-lg: 22px;
   --radius-md: 14px;
   --radius-sm: 10px;
-  --font-display: 'Syne', system-ui, sans-serif;
+  --font-display: 'Space Grotesk', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
-  --ring: 0 0 0 3px rgba(248, 214, 109, 0.18);
+  --ring: 0 0 0 3px rgba(245, 196, 84, 0.2);
 }
 
 * {
@@ -30,9 +30,9 @@ body {
   font-family: var(--font-display);
   color: var(--text-0);
   background:
-    radial-gradient(1200px 700px at 0% -10%, rgba(248, 214, 109, 0.18), transparent 55%),
-    radial-gradient(1000px 600px at 100% 0%, rgba(107, 230, 214, 0.2), transparent 60%),
-    radial-gradient(900px 700px at 40% 120%, rgba(155, 107, 255, 0.22), transparent 60%),
+    radial-gradient(1100px 600px at 5% -10%, rgba(245, 196, 84, 0.18), transparent 55%),
+    radial-gradient(900px 520px at 100% 0%, rgba(57, 208, 200, 0.2), transparent 60%),
+    radial-gradient(880px 700px at 40% 120%, rgba(122, 217, 122, 0.22), transparent 60%),
     linear-gradient(160deg, var(--bg-1), var(--bg-0));
   min-height: 100vh;
 }
@@ -41,9 +41,9 @@ body::before {
   content: '';
   position: fixed;
   inset: 0;
-  background-image: radial-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 0);
-  background-size: 3px 3px;
-  opacity: 0.4;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 0);
+  background-size: 3.5px 3.5px;
+  opacity: 0.35;
   pointer-events: none;
   z-index: -1;
 }
@@ -73,7 +73,7 @@ a {
 }
 
 .app-container {
-  width: min(1180px, 92vw);
+  width: min(1200px, 92vw);
   margin: 0 auto;
 }
 
@@ -82,19 +82,20 @@ a {
   border: 1px solid var(--stroke);
   box-shadow: var(--shadow);
   backdrop-filter: blur(18px);
+  position: relative;
 }
 
 .pill {
   padding: 0.3rem 0.75rem;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   font-size: 0.8rem;
   letter-spacing: 0.2px;
 }
 
 .glow-text {
-  background: linear-gradient(90deg, var(--accent-0), var(--accent-1), var(--accent-3));
+  background: linear-gradient(90deg, var(--accent-0), var(--accent-1), var(--accent-2));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;

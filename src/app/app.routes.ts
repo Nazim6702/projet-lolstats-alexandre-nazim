@@ -6,6 +6,7 @@ import { ChampionDetailsComponent } from './champion-details/champion-details';
 import { ClassementComponent } from './classement/classement';
 import { PlayerStatsComponent } from './player-stats/player-stats';
 import { Page404Component } from './page404/page404';
+import { AProposComponent } from './a-propos/a-propos';
 
 export const routes: Routes = [
   // page par défaut
@@ -41,6 +42,12 @@ export const routes: Routes = [
   {
     path: 'classement',
     component: ClassementComponent,
+  },
+
+  // à propos
+  {
+    path: 'a-propos',
+    component: AProposComponent,
   },
 
   // 404

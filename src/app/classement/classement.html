@@ -16,7 +16,7 @@
         [class.active]="tier === t.key"
         (click)="setTier(t.key)"
       >
-        <img class="tier-icon" [src]="'assets/ranks/' + t.key + '.png'" [alt]="t.label" />
+        <img class="tier-icon" [src]="'/assets/ranks/' + t.key + '.png'" [alt]="t.label" />
         {{ t.label }}
       </button>
     }
