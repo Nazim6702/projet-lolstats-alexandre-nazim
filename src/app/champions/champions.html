@@ -27,6 +27,9 @@
         [class.active]="role === r"
         (click)="setRole(r)"
       >
+        @if (getRoleIcon(r)) {
+          <img class="role-icon" [src]="getRoleIcon(r)!" [alt]="r" />
+        }
         {{ r }}
       </button>
     }

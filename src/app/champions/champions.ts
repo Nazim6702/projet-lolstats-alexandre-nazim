@@ -77,6 +77,23 @@ export class ChampionsComponent {
     this.applyFilter();
   }
 
+  protected getRoleIcon(role: RoleFilter): string | null {
+    switch (role) {
+      case 'TOP':
+        return '/assets/lane/top.png';
+      case 'JUNGLE':
+        return '/assets/lane/jungler.png';
+      case 'MID':
+        return '/assets/lane/mid.png';
+      case 'ADC':
+        return '/assets/lane/adc.png';
+      case 'SUPPORT':
+        return '/assets/lane/support.png';
+      default:
+        return null;
+    }
+  }
+
   private applyFilter(): void {
     this.filtered = this.champions.filter((c) =>
       this.championsService.championMatchesRole(c, this.role),
