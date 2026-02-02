@@ -2,7 +2,7 @@
   <div class="hero-text">
     <span class="pill">Live Riot data</span>
     <h1 class="hero-title">
-      Recherche ton joueur <span class="glow-text">LoL</span>.
+      Analyse instantanée de tes performances <span class="glow-text">LoL</span>.
     </h1>
     <p class="hero-subtitle">
       Recherche un joueur par Riot ID et affiche ses stats et champions preferes.
@@ -41,7 +41,40 @@
     <button class="cta-btn" type="submit" [disabled]="f.invalid || loading">
       @if (loading) { Recherche... } @else { Scanner le joueur }
     </button>
+    <p class="helper-text">
+      Exemple : <span class="mono">Sumish#QLF</span> — pense à utiliser le bon tag.
+    </p>
   </form>
+</section>
+
+<section class="benefits">
+  <div class="benefit-card glass">
+    <div class="benefit-top">
+      <span class="benefit-icon icon-chart" aria-hidden="true"></span>
+    </div>
+    <h4>Stats détaillées</h4>
+    <p class="text-muted mb-0">
+      Winrate, KDA moyen, champions favoris et rôle principal estimé.
+    </p>
+  </div>
+  <div class="benefit-card glass">
+    <div class="benefit-top">
+      <span class="benefit-icon icon-trophy" aria-hidden="true"></span>
+    </div>
+    <h4>Classement live</h4>
+    <p class="text-muted mb-0">
+      Accède au ladder et compare les meilleurs joueurs en temps réel.
+    </p>
+  </div>
+  <div class="benefit-card glass">
+    <div class="benefit-top">
+      <span class="benefit-icon icon-history" aria-hidden="true"></span>
+    </div>
+    <h4>Historique clair</h4>
+    <p class="text-muted mb-0">
+      Parcours les derniers matchs et comprends tes tendances de jeu.
+    </p>
+  </div>
 </section>
 
 @if (error) {
