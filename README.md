@@ -12,6 +12,8 @@ Application Angular + backend qui consomme l’API Riot Games.
 
 Dans deux terminaux séparés :
 
+0) Configure d'abord la clé API dans backend/.env (sinon les données de l'APi pourront pas être récupérees).
+
 1) Backend
 ```bash
 cd backend
