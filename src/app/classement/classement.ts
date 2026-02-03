@@ -1,4 +1,4 @@
-import { Component, DestroyRef, inject } from '@angular/core';
+import { Component, DestroyRef, OnInit, inject } from '@angular/core';
 import { finalize } from 'rxjs/operators';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
@@ -8,6 +8,7 @@ import { RiotApiService } from '../services/riot-api';
 import { RankingEntryDTO, RankingTier } from '../models/riot';
 import { ChampionsService } from '../services/champions';
 import {SlicePipe} from '@angular/common';
+import { ERROR_RATE_LIMIT } from '../utils/errors';
 
 type RankingEntryVm = RankingEntryDTO & { winrate: number };
 
@@ -20,7 +21,7 @@ type RankingEntryVm = RankingEntryDTO & { winrate: number };
     SlicePipe,RouterLink
   ]
 })
-export class ClassementComponent {
+export class ClassementComponent implements OnInit {
   protected loading = false;
   protected error = '';
 
@@ -46,7 +47,7 @@ export class ClassementComponent {
   private readonly championsService = inject(ChampionsService);
   private readonly destroyRef = inject(DestroyRef);
 
-  constructor() {
+  ngOnInit(): void {
     this.championsService
       .getVersion()
       .pipe(takeUntilDestroyed(this.destroyRef))
@@ -101,7 +102,7 @@ export class ClassementComponent {
         error: (err) => {
           const status = err?.status;
           if (status === 429) {
-            this.error = 'Rate limit Riot (trop de requ\u00eates). R\u00e9essaie dans quelques secondes.';
+            this.error = ERROR_RATE_LIMIT;
           } else {
             this.error = 'Impossible de charger le classement.';
           }

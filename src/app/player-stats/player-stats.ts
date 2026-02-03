@@ -1,4 +1,4 @@
-import { Component, DestroyRef, inject } from '@angular/core';
+import { Component, DestroyRef, OnInit, inject } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { DecimalPipe } from '@angular/common';
 import { finalize, map, switchMap, catchError } from 'rxjs/operators';
@@ -16,6 +16,7 @@ import {
   normalizeRole,
 } from '../mappers/player-stats.mapper';
 import { ChampionsService } from '../services/champions';
+import { ERROR_BACKEND_OFF, ERROR_RATE_LIMIT, ERROR_PLAYER_NOT_FOUND } from '../utils/errors';
 
 type RecentMatch = NonNullable<RecentStatsDTO['recentMatches']>[number];
 type MatchParticipant = NonNullable<RecentMatch['participants']>[number];
@@ -27,7 +28,7 @@ type MatchParticipant = NonNullable<RecentMatch['participants']>[number];
   templateUrl: './player-stats.html',
   styleUrl: './player-stats.scss',
 })
-export class PlayerStatsComponent {
+export class PlayerStatsComponent implements OnInit {
   protected puuid = '';
   protected playerName = '';
   protected riotId = '';
@@ -52,8 +53,8 @@ export class PlayerStatsComponent {
   private readonly championsService = inject(ChampionsService);
   private readonly destroyRef = inject(DestroyRef);
 
-  constructor() {
-    // Réagit aux changements d’URL
+  ngOnInit(): void {
+    // React to URL changes
     this.route.paramMap
       .pipe(
         map((p) => p.get('puuid') ?? ''),
@@ -61,7 +62,7 @@ export class PlayerStatsComponent {
           this.puuid = puuid;
 
           if (!puuid) {
-            this.error = 'Puuid manquant dans l’URL.';
+            this.error = "Puuid manquant dans l'URL.";
             this.stats = null;
             return of(null);
           }
@@ -167,11 +168,11 @@ export class PlayerStatsComponent {
       catchError((err) => {
         const status = err?.status;
         if (status === 429) {
-          this.error = 'Rate limit Riot (trop de requ\u00eates). R\u00e9essaie dans quelques secondes.';
+          this.error = ERROR_RATE_LIMIT;
         } else if (status === 404) {
-          this.error = 'Joueur introuvable.';
+          this.error = ERROR_PLAYER_NOT_FOUND;
         } else {
-          this.error = 'Erreur serveur. V\u00e9rifie que le backend est lanc\u00e9 sur http://localhost:3000.';
+          this.error = ERROR_BACKEND_OFF;
         }
         this.stats = null;
         this.matchList = [];

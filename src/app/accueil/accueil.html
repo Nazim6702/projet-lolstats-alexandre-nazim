@@ -1,11 +1,10 @@
 <section class="hero glass">
   <div class="hero-text">
-    <span class="pill">Live Riot data</span>
     <h1 class="hero-title">
-      Analyse instantanée de tes performances <span class="glow-text">LoL</span>.
+      Analyse instantanee de tes performances <span class="glow-text">LoL</span>.
     </h1>
-    <p class="hero-subtitle">
-      Recherche un joueur par Riot ID et affiche ses stats et champions preferes.
+    <p class="hero-kicker">
+      Cherche un joueur, decouvre son style de jeu et compare ses resultats en un coup d'oeil.
     </p>
   </div>
 
@@ -42,19 +41,20 @@
       @if (loading) { Recherche... } @else { Scanner le joueur }
     </button>
     <p class="helper-text">
-      Exemple : <span class="mono">Sumish#QLF</span> — pense à utiliser le bon tag.
+      Exemple : <span class="mono">Sumish#000</span> - pense a utiliser le bon tag.
     </p>
   </form>
 </section>
+
 
 <section class="benefits">
   <div class="benefit-card glass">
     <div class="benefit-top">
       <span class="benefit-icon icon-chart" aria-hidden="true"></span>
     </div>
-    <h4>Stats détaillées</h4>
+    <h4>Stats detaillees</h4>
     <p class="text-muted mb-0">
-      Winrate, KDA moyen, champions favoris et rôle principal estimé.
+      Winrate, KDA moyen, champions favoris et role principal estime.
     </p>
   </div>
   <div class="benefit-card glass">
@@ -63,7 +63,7 @@
     </div>
     <h4>Classement live</h4>
     <p class="text-muted mb-0">
-      Accède au ladder et compare les meilleurs joueurs en temps réel.
+      Accede au ladder et compare les meilleurs joueurs en temps reel.
     </p>
   </div>
   <div class="benefit-card glass">
@@ -76,6 +76,7 @@
     </p>
   </div>
 </section>
+
 
 @if (error) {
   <div class="alert alert-danger mt-3 mb-0">{{ error }}</div>

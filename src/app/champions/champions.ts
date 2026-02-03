@@ -1,4 +1,4 @@
-import { Component, DestroyRef, inject } from '@angular/core';
+import { Component, DestroyRef, OnInit, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { finalize, switchMap } from 'rxjs/operators';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -17,7 +17,7 @@ type ChampionCardVm = DDragonChampionSummary & {
   templateUrl: './champions.html',
   styleUrl: './champions.scss',
 })
-export class ChampionsComponent {
+export class ChampionsComponent implements OnInit {
   protected role: RoleFilter = 'ALL';
 
   protected loading = false;
@@ -32,7 +32,7 @@ export class ChampionsComponent {
   private readonly championsService = inject(ChampionsService);
   private readonly destroyRef = inject(DestroyRef);
 
-  constructor() {
+  ngOnInit(): void {
     this.fetch();
   }
 

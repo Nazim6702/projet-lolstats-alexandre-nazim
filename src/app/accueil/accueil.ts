@@ -5,6 +5,7 @@ import { finalize } from 'rxjs/operators';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import { RiotApiService } from '../services/riot-api';
+import { ERROR_BACKEND_OFF, ERROR_RATE_LIMIT, ERROR_PLAYER_NOT_FOUND } from '../utils/errors';
 
 @Component({
   selector: 'app-accueil',
@@ -31,7 +32,7 @@ export class AccueilComponent {
     const tagLine = this.tagLine.trim();
 
     if (!gameName || !tagLine) {
-      this.error = 'Merci de renseigner le pseudo et le tag (ex: Sumish / QLF).';
+      this.error = 'Merci de renseigner le pseudo et le tag (ex: Sumish / 000).';
       return;
     }
 
@@ -53,16 +54,16 @@ export class AccueilComponent {
           const status = err?.status;
 
           if (status === 404) {
-            this.error = 'Joueur introuvable. Vérifie le pseudo et le tag (ex: Pseudo#TAG).';
+            this.error = `${ERROR_PLAYER_NOT_FOUND} Verifie le pseudo et le tag (ex: Pseudo#TAG).`;
             return;
           }
 
           if (status === 429) {
-            this.error = 'Rate limit Riot (trop de requ\u00eates). R\u00e9essaie dans quelques secondes.';
+            this.error = ERROR_RATE_LIMIT;
             return;
           }
 
-          this.error = 'Erreur serveur. Vérifie que le backend est lancé sur http://localhost:3000.';
+          this.error = ERROR_BACKEND_OFF;
         },
       });
   }

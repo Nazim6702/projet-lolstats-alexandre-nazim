@@ -25,6 +25,29 @@
     </div>
   </header>
 
+  @if (backendStatus !== 'ok') {
+    <div class="backend-banner">
+      <div class="app-container backend-banner-inner">
+        <div class="backend-banner-text">
+          <strong>Backend requis</strong>
+          @if (backendStatus === 'checking') {
+            <span>Vérification de la connexion au backend en cours…</span>
+          } @else {
+            <span>Le backend ne répond pas. Lance `backend` avec une clé Riot valide.</span>
+          }
+        </div>
+        <button
+          class="backend-banner-btn"
+          type="button"
+          (click)="checkBackend()"
+          [disabled]="checkingBackend"
+        >
+          @if (checkingBackend) { Vérification… } @else { Réessayer }
+        </button>
+      </div>
+    </div>
+  }
+
   <main class="app-main">
     <div class="app-container">
       <router-outlet></router-outlet>

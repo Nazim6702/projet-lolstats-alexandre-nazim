@@ -59,4 +59,8 @@ export class RiotApiService {
     return this.http.get<PlayerRankDTO>(url);
   }
 
+  getHealth(): Observable<{ ok: boolean; service: string }> {
+    const url = `${this.baseUrl}/health`;
+    return this.http.get<{ ok: boolean; service: string }>(url);
+  }
 }

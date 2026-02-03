@@ -1,4 +1,4 @@
-import { Component, DestroyRef, inject } from '@angular/core';
+import { Component, DestroyRef, OnInit, inject } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { finalize, map, switchMap } from 'rxjs/operators';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -21,7 +21,7 @@ type ChampionDetailsVm = DDragonChampionDetails & {
   templateUrl: './champion-details.html',
   styleUrl: './champion-details.scss',
 })
-export class ChampionDetailsComponent {
+export class ChampionDetailsComponent implements OnInit {
   protected loading = false;
   protected error = '';
 
@@ -32,8 +32,8 @@ export class ChampionDetailsComponent {
   private readonly championsService = inject(ChampionsService);
   private readonly destroyRef = inject(DestroyRef);
 
-  constructor() {
-    // On réagit aux changements d'URL (si tu navigues d'un champion à un autre sans détruire le composant)
+  ngOnInit(): void {
+    // React to URL changes (navigation without destroying component)
     this.route.paramMap
       .pipe(
         map((p) => p.get('id') ?? ''),
